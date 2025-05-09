@@ -15,29 +15,16 @@ const STUDENTS_AUTOCOMPLETE = gql`
 `;
 
 const GET_RECENTLY_UPLOADED_IMAGES = gql`
-  query getRecentlyUploadedImages {
-    getRecentlyUploadedImages {
-      id
-      stdno
-      student {
-        biodata {
-          surname
-          other_names
-        }
-      }
-      modified_on
-      uploaded_on
-      added_user {
-        staff_name
-        title
-      }
-      modified_user {
-        staff_name
-        title
-      }
-      upload_status
-    }
+ query GetRecentlyUploadedImages {
+  getRecentlyUploadedImages {
+    id
+    stdno
+    student_name
+    image
+    modified_by_name
+    last_modified_on
   }
+}
 `;
 
 export { STUDENTS_AUTOCOMPLETE, GET_RECENTLY_UPLOADED_IMAGES };

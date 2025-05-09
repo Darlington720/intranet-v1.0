@@ -12,6 +12,7 @@ const initialState = {
   imageToUpload: null,
   recentUploads: [],
   selectedRow: null,
+  images: []
 };
 /**
  * The File Manager App slice.
@@ -46,6 +47,9 @@ export const photosSlice = createSlice({
     setSelectedRow: (state, action) => {
       state.selectedRow = action.payload;
     },
+    setImages: (state, action) => {
+      state.images = action.payload;
+    },
   },
   selectors: {
     selectActiveBooth: (state) => state.activeBooth,
@@ -56,6 +60,7 @@ export const photosSlice = createSlice({
     selectImageToUpload: (state) => state.imageToUpload,
     selectRecentUploads: (state) => state.recentUploads,
     selectSelectedRow: (state) => state.selectedRow,
+    selectImages: (state) => state.images,
   },
 });
 /**
@@ -72,6 +77,7 @@ export const {
   setImageToUpload,
   setRecentUploads,
   setSelectedRow,
+  setImages
 } = photosSlice.actions;
 export const {
   selectActiveBooth,
@@ -82,5 +88,6 @@ export const {
   selectImageToUpload,
   selectRecentUploads,
   selectSelectedRow,
+  selectImages
 } = injectedSlice.selectors;
 export default photosSlice.reducer;

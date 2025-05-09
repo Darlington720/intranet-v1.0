@@ -9,8 +9,9 @@ import Box from "@mui/material/Box";
 import Grid from "@mui/material/Unstable_Grid2";
 import { motion } from "framer-motion";
 import Avatar from "@mui/material/Avatar";
-import { AutoComplete, Tooltip, Modal, Slider, Radio } from "antd";
+import { AutoComplete, Tooltip, Modal, Slider, Radio, Tabs, Spin } from "antd";
 import Phototable from "./Phototable";
+import PhotoGrid from "./PhotoGrid";
 import PhotoCamera from "@mui/icons-material/PhotoCamera";
 import LinkedCameraIcon from "@mui/icons-material/LinkedCamera";
 import PerfectScrollbar from "perfect-scrollbar";
@@ -21,23 +22,31 @@ import {
   Button as Button2,
   Upload,
 } from "antd";
-import { useLazyQuery, useMutation } from "@apollo/client";
-import { STUDENTS_AUTOCOMPLETE } from "../gql/queries";
+import { mockStudents } from "./mockData";
+
+import { useLazyQuery, useMutation, useQuery } from "@apollo/client";
+import {
+  GET_RECENTLY_UPLOADED_IMAGES,
+  STUDENTS_AUTOCOMPLETE,
+} from "../gql/queries";
 import { useDispatch, useSelector } from "react-redux";
 import { showMessage } from "@fuse/core/FuseMessage/fuseMessageSlice";
 import { debounce } from "lodash";
 import {
   selectImagePreview,
+  selectImages,
   selectImageToUpload,
   selectOptions,
   selectSelectedOption,
   setImagePreview,
+  setImages,
   setSelectedOption,
   setStdOptions,
 } from "../store/photosSlice";
 import { SAVE_STUDENT_IMAGE } from "../gql/mutations";
 import { selectUser } from "app/store/userSlice";
 import { Save } from "lucide-react";
+import PhotoEditor from "./PhotoEditor";
 
 const { Search } = Input2;
 
@@ -50,6 +59,8 @@ const createImage = (url) =>
     image.crossOrigin = "anonymous";
     image.src = url;
   });
+
+
 
 const getCroppedImg = async (
   imageSrc,
@@ -181,6 +192,7 @@ const applyFilters = (imageSrc, filters) => {
 
 function DemoContent() {
   const [activeTab, setActiveTab] = React.useState("1");
+  const [viewMode, setViewMode] = React.useState("grid");
   const [searchText, setSearchText] = useState("");
   const dispatch = useDispatch();
   const _options = useSelector(selectOptions);
@@ -189,10 +201,45 @@ function DemoContent() {
   const imageToUpload = useSelector(selectImageToUpload);
   const [value, setValue] = useState("");
   const [options, setOptions] = useState([]);
+  const [photos, setPhotos] = useState(mockStudents);
   const scrollContainerRef = React.useRef(null);
   const psRef = React.useRef(null);
   const userObj = useSelector(selectUser);
   const [image, setImage] = useState(null);
+  const [selectedPhoto, setSelectedPhoto] = useState(null);
+  const {
+    loading: loadingImages,
+    error: imagesErr,
+    data: imagesData,
+  } = useQuery(GET_RECENTLY_UPLOADED_IMAGES, {
+    notifyOnNetworkStatusChange: true,
+  });
+
+  const handleEditPhoto = (photo) => {
+    setSelectedPhoto(photo);
+    setEditingImage(photo.image);
+    setIsEditorOpen(true);
+  };
+
+  const handleDeletePhoto = (photo) => {
+    Modal.confirm({
+      title: "Delete Photo",
+      content: `Are you sure you want to delete ${photo.name}'s photo?`,
+      okText: "Yes",
+      okType: "danger",
+      cancelText: "No",
+      onOk() {
+        const updatedPhotos = photos.filter((p) => p.id !== photo.id);
+        setPhotos(updatedPhotos);
+        dispatch(
+          showMessage({
+            message: "Photo deleted successfully",
+            variant: "success",
+          })
+        );
+      },
+    });
+  };
   const [studentsAutoComplete, { error, loading, data }] = useLazyQuery(
     STUDENTS_AUTOCOMPLETE,
     {
@@ -235,6 +282,7 @@ function DemoContent() {
   ] = useMutation(SAVE_STUDENT_IMAGE, {
     refetchQueries: ["getRecentlyUploadedImages"], //to be fetch updated uploaded students
   });
+  const images = useSelector(selectImages);
 
   const fileInputRef = React.useRef(null);
 
@@ -656,6 +704,7 @@ function DemoContent() {
       // Update the image state and preview
       setImage(file);
       dispatch(setImagePreview(finalImage));
+      // setSelectedPhoto(file);
 
       // Close the editor
       setIsEditorOpen(false);
@@ -679,22 +728,38 @@ function DemoContent() {
     }
   };
 
-  if (error) {
-    dispatch(
-      showMessage({
-        message: error.message,
-        variant: "error",
-      })
-    );
-  }
+  useEffect(() => {
+    if (error) {
+      dispatch(
+        showMessage({
+          message: error.message,
+          variant: "error",
+        })
+      );
+    }
 
-  if (saveErr) {
-    dispatch(
-      showMessage({
-        message: saveErr.message,
-        variant: "error",
-      })
-    );
+    if (saveErr) {
+      dispatch(
+        showMessage({
+          message: saveErr.message,
+          variant: "error",
+        })
+      );
+    }
+
+    if (imagesErr) {
+      dispatch(
+        showMessage({
+          message: imagesErr.message,
+          variant: "error",
+        })
+      );
+    }
+  }, [error, saveErr, imagesErr]);
+
+  if (imagesData) {
+    // console.log('imagesData', imagesData)
+    dispatch(setImages(imagesData.getRecentlyUploadedImages));
   }
 
   const debouncedFetchSuggestions = useCallback(
@@ -725,8 +790,8 @@ function DemoContent() {
   };
 
   const onSelect = (data) => {
+    console.log("data", data);
     const selected = _options.filter((op) => op.student_no == data)[0];
-    console.log("selected", selected);
     dispatch(
       setImagePreview(
         `http://tredumo.com/api/student_image/${selected.student_no}`
@@ -941,6 +1006,7 @@ function DemoContent() {
         className="border-2 border-dashed rounded-2xl"
         style={{
           height: "calc(100vh - 230px)",
+          
         }}
       >
         <motion.div initial="hidden" animate="show">
@@ -953,17 +1019,16 @@ function DemoContent() {
                     borderRadius: 0,
                     borderTopLeftRadius: 10,
                     borderBottomLeftRadius: 10,
+                    overflow: "scroll"
                   }}
                 >
                   <CardContent
                     className="flex flex-col flex-auto p-24"
                     style={{
-                      height: "calc(100vh - 278px)",
-                      overflowY: "hidden",
+                      height: "calc(100vh - 235px)",
+                      justifyContent: "center",
                     }}
                   >
-                    <Grid container spacing={1}></Grid>
-
                     <AutoComplete
                       options={options}
                       onSelect={onSelect}
@@ -972,444 +1037,127 @@ function DemoContent() {
                       onChange={(text) =>
                         dispatch(setSelectedOption({ student_no: text }))
                       }
+                      // onClick={(e) => console.log("clicked", e.target.value)}
                     >
                       <Search
-                        style={{ marginBottom: 0 }}
+                        style={{ marginBottom: 20, marginTop: 5 }}
                         loading={loading}
                         placeholder="Enter Student Identifier"
-                        size="middle"
+                        size="large"
                       />
                     </AutoComplete>
-                    <div ref={scrollContainerRef}>
-                      <div
-                        style={{
+
+                    <div>
+                      <Box
+                        sx={{
+                          textAlign: "center",
                           display: "flex",
                           justifyContent: "center",
-                          alignItems: "center",
-                          marginTop: 10,
+                          overflow: "auto",
+                          maxHeight: "70vh",
+                          borderRadius: 2,
+                          // p: 1,
                         }}
+                        
                       >
-                        <motion.div animate={{ x: [0, 30, 0] }}>
-                          {/* Show the preview crop during editing */}
-                          <Avatar
-                            sx={{ borderColor: "purple" }}
-                            className="w-200 h-200 border-4"
-                            src={
-                              isEditorOpen && previewCrop
-                                ? previewCrop
-                                : imagePreview
-                            }
-                            alt="User avatar"
-                          />
-                        </motion.div>
-                      </div>
+                        <img
+                          src={`http://localhost:2222/student_photo/2400100002`}
+                          alt={"AKAMPA"}
+                          style={{
+                            transform: `scale(${90 / 100})`,
+                            transition: "transform 0.3s ease",
+                            transformOrigin: "center",
+                            borderRadius: 8,
+                            boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+                            // ...getFilterStyle(),
+                            margin: "10px 0px"
+                          }}
+                        />
+                      </Box>
+                    </div>
 
-                      <div
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        gap: 10,
+                        marginTop: 0,
+                      }}
+                    >
+                      <Upload
+                        showUploadList={false}
+                        maxCount={1}
+                        accept="image/png, image/jpeg, image/jpg"
+                        onChange={handleChange}
+                      >
+                        <Button2
+                          block
+                          size="large"
+                          type="primary"
+                          // disabled={true}
+                          icon={<PhotoCamera />}
+                          style={{
+                            width: 250,
+                            height: 50,
+                            fontSize: 16,
+                            // backgroundColor: "#4a90e2",
+                            borderRadius: 8,
+                          }}
+                        >
+                          Upload Image
+                        </Button2>
+                      </Upload>
+
+                      <Button2
+                        block
+                        size="large"
+                        // disabled={true}
+                        icon={<LinkedCameraIcon />}
                         style={{
-                          padding: 20,
+                          width: 250,
+                          height: 50,
+                          fontSize: 16,
+                          borderRadius: 8,
                         }}
                       >
-                        <div
-                          style={{
-                            display: "flex",
-                            paddingBottom: 15,
-                          }}
-                        >
-                          <Typography
-                            style={{
-                              width: 100,
-                            }}
-                          >
-                            Name:
-                          </Typography>
-                          <Tooltip title={selectedStd?.name}>
-                            <Typography
-                              style={{
-                                fontWeight: "500",
-                                whiteSpace: "nowrap",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                              }}
-                            >
-                              {selectedStd?.name}
-                            </Typography>
-                          </Tooltip>
-                        </div>
-
-                        <div
-                          style={{
-                            display: "flex",
-                            paddingBottom: 15,
-                          }}
-                        >
-                          <Typography
-                            style={{
-                              width: 100,
-                            }}
-                          >
-                            Reg No:
-                          </Typography>
-                          <Tooltip title={selectedStd?.registration_no}>
-                            <Typography
-                              style={{
-                                fontWeight: "500",
-                                whiteSpace: "nowrap",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                              }}
-                            >
-                              {selectedStd?.registration_no}
-                            </Typography>
-                          </Tooltip>
-                        </div>
-
-                        <div
-                          style={{
-                            display: "flex",
-                            paddingBottom: 0,
-                          }}
-                        >
-                          <Typography
-                            style={{
-                              minWidth: 100,
-                              textWrap: "nowrap",
-                            }}
-                          >
-                            Course code:
-                          </Typography>
-                          <Typography
-                            style={{
-                              fontWeight: "500",
-                            }}
-                          >
-                            {selectedStd?.course?.course_code}
-                          </Typography>
-                        </div>
-                      </div>
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <Space>
-                          <Upload
-                            showUploadList={false}
-                            maxCount={1}
-                            accept="image/png, image/jpeg, image/jpg"
-                            onChange={handleChange}
-                          >
-                            <Button2
-                              disabled={!selectedStd}
-                              icon={<PhotoCamera />}
-                            >
-                              Upload Image
-                            </Button2>
-                          </Upload>
-                          <Button2 icon={<LinkedCameraIcon />}>
-                            Take Image
-                          </Button2>
-                        </Space>
-                      </div>
+                        Take Photo
+                      </Button2>
                     </div>
                   </CardContent>
-                  <CardActions
-                    className="items-center justify-end py-8 px-24"
-                    sx={{
-                      backgroundColor: (theme) =>
-                        theme.palette.mode === "light"
-                          ? lighten(theme.palette.background.default, 0.4)
-                          : lighten(theme.palette.background.default, 0.03),
-                    }}
-                  >
-                    <Button2
-                      size="small"
-                      type="primary"
-                      style={{
-                        backgroundColor:
-                          selectedStd &&
-                          image &&
-                          !savingStdImage &&
-                          "dodgerblue",
-                      }}
-                      disabled={!selectedStd || !image}
-                      onClick={handleSave}
-                      loading={savingStdImage}
-                      icon={<Save size={15} />}
-                    >
-                      Save
-                    </Button2>
-                  </CardActions>
                 </Card>
               </Grid>
+
               <Grid xs={8}>
-                <Phototable />
+                {/* <Phototable /> */}
+                <div
+                  style={{
+                    height: "calc(100vh - 250px)",
+                    overflowY: "scroll",
+                  }}
+                >
+                  <Spin spinning={loadingImages} tip="Loading Recent Images...">
+                    <PhotoGrid
+                      photos={images}
+                      onEditPhoto={handleEditPhoto}
+                      onDeletePhoto={handleDeletePhoto}
+                    />
+                  </Spin>
+                </div>
               </Grid>
             </Grid>
           </Box>
         </motion.div>
       </div>
 
-      {/* Image Editor Modal */}
-      <Modal
-        title="Edit Image"
-        open={isEditorOpen}
-        onCancel={() => setIsEditorOpen(false)}
-        width={800}
-        footer={[
-          <Button2 key="cancel" onClick={() => setIsEditorOpen(false)}>
-            Cancel
-          </Button2>,
-          <Button2 key="save" type="primary" onClick={saveEditedImage}>
-            Apply & Save
-          </Button2>,
-        ]}
-      >
-        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-          {/* Edit Mode Selection */}
-          <Radio.Group
-            value={editMode}
-            onChange={(e) => setEditMode(e.target.value)}
-            buttonStyle="solid"
-          >
-            <Radio.Button value="crop">Crop & Resize</Radio.Button>
-            <Radio.Button value="filter">Adjust & Enhance</Radio.Button>
-          </Radio.Group>
-
-          {/* Image Preview Area */}
-          <div
-            style={{
-              position: "relative",
-              height: "400px",
-              background: "#f0f0f0",
-              borderRadius: "8px",
-              overflow: "hidden",
-            }}
-          >
-            {editMode === "crop" ? (
-              <div
-                ref={cropperRef}
-                style={{
-                  position: "relative",
-                  width: "100%",
-                  height: "100%",
-                  cursor: isDragging
-                    ? dragMode === "move"
-                      ? "move"
-                      : dragMode === "nw" || dragMode === "se"
-                        ? "nwse-resize"
-                        : dragMode === "ne" || dragMode === "sw"
-                          ? "nesw-resize"
-                          : dragMode === "n" || dragMode === "s"
-                            ? "ns-resize"
-                            : "ew-resize"
-                    : "crosshair",
-                }}
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseUp}
-              >
-                {/* Background image */}
-                <img
-                  ref={imageRef}
-                  src={editingImage || "/placeholder.svg"}
-                  alt="Edit"
-                  style={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "50%",
-                    transform: "translate(-50%, -50%)",
-                    maxWidth: "100%",
-                    maxHeight: "100%",
-                  }}
-                  onLoad={(e) => {
-                    // Update image size when it loads
-                    if (cropperRef.current) {
-                      const img = e.target;
-                      const containerWidth = cropperRef.current.clientWidth;
-                      const containerHeight = cropperRef.current.clientHeight;
-
-                      // Calculate the displayed image size
-                      setImageSize({
-                        width: img.width,
-                        height: img.height,
-                      });
-
-                      // Initialize crop area
-                      const size = Math.min(img.width, img.height) * 0.8;
-                      const initialX = (containerWidth - size) / 2;
-                      const initialY = (containerHeight - size) / 2;
-
-                      setCropArea({
-                        x: initialX,
-                        y: initialY,
-                        width: size,
-                        height: size,
-                      });
-
-                      // Generate initial preview
-                      updateCropPreview(initialX, initialY, size, size);
-                    }
-                  }}
-                />
-
-                {/* Crop overlay */}
-                <div
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: "rgba(0, 0, 0, 0.5)",
-                    pointerEvents: "none",
-                  }}
-                />
-
-                {/* Crop window */}
-                <div
-                  style={{
-                    position: "absolute",
-                    top: cropArea.y,
-                    left: cropArea.x,
-                    width: cropArea.width,
-                    height: cropArea.height,
-                    border: "1px solid white",
-                    boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.5)",
-                    pointerEvents: "none",
-                  }}
-                />
-
-                {/* Grid overlay */}
-                <WhatsAppGridOverlay />
-
-                {/* Crop handles */}
-                {renderCropHandles()}
-              </div>
-            ) : (
-              <div
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <img
-                  src={editingImage || "/placeholder.svg"}
-                  alt="Preview"
-                  style={{
-                    maxWidth: "100%",
-                    maxHeight: "100%",
-                    filter: `brightness(${filters.brightness}%) contrast(${filters.contrast}%) saturate(${filters.saturation}%) blur(${filters.blur}px)`,
-                  }}
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Controls based on edit mode */}
-          {editMode === "crop" && (
-            <div>
-              <div style={{ marginBottom: "15px" }}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: "8px",
-                  }}
-                >
-                  <Typography>Aspect Ratio</Typography>
-                  <Button2
-                    type={showGrid ? "primary" : "default"}
-                    size="small"
-                    onClick={() => setShowGrid(!showGrid)}
-                  >
-                    {showGrid ? "Hide Grid" : "Show Grid"}
-                  </Button2>
-                </div>
-                <Radio.Group
-                  defaultValue="square"
-                  buttonStyle="solid"
-                  onChange={(e) => {
-                    if (e.target.value === "free") {
-                      // Free aspect ratio
-                      setAspectRatio(null);
-                    } else if (e.target.value === "square") {
-                      // Square aspect ratio (1:1)
-                      setAspectRatio(1);
-                    } else if (e.target.value === "portrait") {
-                      // Portrait aspect ratio (3:4)
-                      setAspectRatio(3 / 4);
-                    } else if (e.target.value === "landscape") {
-                      // Landscape aspect ratio (4:3)
-                      setAspectRatio(4 / 3);
-                    }
-                  }}
-                >
-                  <Radio.Button value="free">Free</Radio.Button>
-                  <Radio.Button value="square">Square</Radio.Button>
-                  <Radio.Button value="portrait">Portrait</Radio.Button>
-                  <Radio.Button value="landscape">Landscape</Radio.Button>
-                </Radio.Group>
-              </div>
-            </div>
-          )}
-
-          {editMode === "filter" && (
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "10px" }}
-            >
-              <div>
-                <Typography>Brightness: {filters.brightness}%</Typography>
-                <Slider
-                  value={filters.brightness}
-                  min={50}
-                  max={150}
-                  onChange={(value) =>
-                    setFilters({ ...filters, brightness: value })
-                  }
-                />
-              </div>
-              <div>
-                <Typography>Contrast: {filters.contrast}%</Typography>
-                <Slider
-                  value={filters.contrast}
-                  min={50}
-                  max={150}
-                  onChange={(value) =>
-                    setFilters({ ...filters, contrast: value })
-                  }
-                />
-              </div>
-              <div>
-                <Typography>Saturation: {filters.saturation}%</Typography>
-                <Slider
-                  value={filters.saturation}
-                  min={0}
-                  max={200}
-                  onChange={(value) =>
-                    setFilters({ ...filters, saturation: value })
-                  }
-                />
-              </div>
-              <div>
-                <Typography>Blur: {filters.blur}px</Typography>
-                <Slider
-                  value={filters.blur}
-                  min={0}
-                  max={10}
-                  step={0.1}
-                  onChange={(value) => setFilters({ ...filters, blur: value })}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-      </Modal>
+      {selectedPhoto && (
+        <PhotoEditor
+          image={editingImage}
+          open={isEditorOpen}
+          onClose={() => setIsEditorOpen(false)}
+          onSave={saveEditedImage}
+        />
+      )}
     </div>
   );
 }
