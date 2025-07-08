@@ -18,13 +18,14 @@ import {
   Modal,
   Row,
   Select,
+  Typography,
 } from "antd";
 import PerfectScrollbar from "perfect-scrollbar";
 import { Input as Input2, Space, Button as Button2 } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { selectUser } from "app/store/userSlice";
 import RegisterTabs from "./register_tabs/RegisterTabs";
-import { SearchOutlined } from "@mui/icons-material";
+import { Close, SearchOutlined } from "@mui/icons-material";
 import { useLazyQuery, useMutation } from "@apollo/client";
 import { LOAD_STUDENT_FILE } from "../../gql/queries";
 import { showMessage } from "@fuse/core/FuseMessage/fuseMessageSlice";
@@ -230,8 +231,7 @@ function Register() {
       studentNo: studentFile?.student_no,
       studyYr: parseInt(values.study_yr),
       semester: parseInt(studentFile?.current_info.true_sem),
-      enrollmentStatus: values.enrollment_status,
-      enrolledBy: `${userObj.user.biodata.title} ${userObj.user.biodata.staff_name}`,
+      enrollmentStatus: values.enrollment_status
     };
 
     // console.log("payload", userObj.user);
@@ -641,28 +641,29 @@ function Register() {
       </div>
       {studentFile && (
         <Modal
-          title={
-            <div
-              style={{
-                // backgroundColor: "red",
-                padding: 0,
-                margin: 0,
-              }}
-            >
-              <span
-                style={{
-                  color: "purple",
-                }}
-              >
-                ENROLL{" "}
+        title={
+          <Typography.Text
+            style={{
+              color: "#fff",
+            }}
+          >
+            ENROLL{" "}
                 {`${studentFile?.biodata.surname} ${studentFile?.biodata.other_names}`}{" "}
                 - {studentFile?.student_no}
-              </span>
-            </div>
-          }
+          </Typography.Text>
+        }
+          
           style={{ top: "25%" }}
           open={enrollModalVisible}
           onOk={() => form2.submit()}
+          closeIcon={
+            <Close
+              style={{
+                color: "#fff",
+                marginTop: -15
+              }}
+            />
+          }
           onCancel={() => dispatch(setEnrollModalVisible(false))}
           okText="Enroll"
           okButtonProps={{
@@ -671,6 +672,27 @@ function Register() {
             disabled: enrollingStudent,
           }}
           maskClosable={false}
+          styles={{
+            body: {
+              paddingLeft: 10,
+              paddingRight: 10,
+              height: "auto",
+    
+              // Ensure the content is not clipped
+            },
+            content: {
+              padding: 0,
+              height: "auto",
+              // Ensure the content is not clipped
+            },
+            footer: {
+              padding: 10,
+            },
+            header: {
+              backgroundColor: "#2f405d",
+              padding: "7px 10px",
+            },
+          }}
         >
           <div
             style={{

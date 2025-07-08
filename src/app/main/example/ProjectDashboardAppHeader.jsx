@@ -8,6 +8,7 @@ import _ from "@lodash";
 import Button from "@mui/material/Button";
 import FuseSvgIcon from "@fuse/core/FuseSvgIcon";
 import { Icon } from "@iconify/react";
+import { url2 } from "app/configs/apiConfig";
 
 // import { getProjects, selectProjects } from "./store/projectsSlice";
 
@@ -95,7 +96,8 @@ function ProjectDashboardAppHeader(props) {
           <Avatar
             className="flex-0 w-80 h-80"
             alt="user photo"
-            src={user?.data?.photoURL}
+            // src={user?.data?.photoURL}
+            src={`${url2}/staff_photo/${user?.biodata?.staff_id}`}
           >
             {user?.data?.displayName[0]}
           </Avatar>

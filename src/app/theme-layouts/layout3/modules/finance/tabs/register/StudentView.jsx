@@ -2,13 +2,9 @@ import * as React from "react";
 import { useState, useCallback } from "react";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
-import CardActions from "@mui/material/CardActions";
-
-import { lighten } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Unstable_Grid2";
 import { SyncOutlined } from "@ant-design/icons";
-
 import { motion } from "framer-motion";
 import Avatar from "@mui/material/Avatar";
 import {
@@ -20,6 +16,7 @@ import {
   Modal,
   Row,
   Select,
+  Typography,
 } from "antd";
 import PerfectScrollbar from "perfect-scrollbar";
 import { Input as Input2, Space, Button as Button2 } from "antd";
@@ -27,10 +24,10 @@ import { Input as Input2, Space, Button as Button2 } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 
 import { selectUser } from "app/store/userSlice";
-import RegisterTabs from "./register_tabs/RegisterTabs";
+import StudentViewTabs from "./student_view_tabs/StudentViewTabs";
 import { SearchOutlined } from "@mui/icons-material";
 import { useLazyQuery, useMutation } from "@apollo/client";
-import { LOAD_STUDENT_FILE } from "../../gql/queries";
+import { LOAD_STUDENT_FILE_WITH_VOID } from "../../gql/queries";
 import { showMessage } from "@fuse/core/FuseMessage/fuseMessageSlice";
 import {
   selectEnrollmentStatuses,
@@ -44,10 +41,11 @@ import {
   setSpecificEnrollmentStatuses,
   setStudentData,
   setStudentNo,
+  setVoidedInvoices,
 } from "../../store/financeSlice";
 import { ENROLL_STUDENT } from "../../gql/mutations";
-import PaymentModal from "./register_tabs/transactions/PaymentModal";
-import PaymentSlip from "./register_tabs/transactions/prt/PaymentSlip";
+import PaymentModal from "./student_view_tabs/transactions/PaymentModal";
+import PaymentSlip from "./student_view_tabs/transactions/prt/PaymentSlip";
 
 const { Search } = Input2;
 
@@ -103,9 +101,9 @@ const enrollment_statuses = [
   { value: "3", label: "FINALIST" },
 ];
 
-function Register() {
+function StudentView() {
   const [loadStudentFile, { error, loading: loadingStudentFile, data }] =
-    useLazyQuery(LOAD_STUDENT_FILE, {
+    useLazyQuery(LOAD_STUDENT_FILE_WITH_VOID, {
       fetchPolicy: "network-only",
       notifyOnNetworkStatusChange: true,
     });
@@ -121,6 +119,7 @@ function Register() {
     if (data) {
       if (data.loadStudentFile) {
         dispatch(setStudentData(data.loadStudentFile));
+        dispatch(setVoidedInvoices(data.voided_invoices))
       }
     }
   }, [data]);
@@ -130,16 +129,9 @@ function Register() {
   const enrollmentTypes = useSelector(selectEnrollmentStatuses);
   const specificEnrollmentTypes = useSelector(selectSpecificEnrollmentStatuses);
   const studentNo = useSelector(selectStudentNo);
-  const [activeTab, setActiveTab] = React.useState("1");
-  const [searchText, setSearchText] = useState("");
   const dispatch = useDispatch();
   const [form] = Form.useForm();
   const [form2] = Form.useForm();
-
-  // console.log("enrollment types", enrollmentTypes);
-
-  const [value, setValue] = useState("");
-  const [options, setOptions] = useState([]);
   const scrollContainerRef = React.useRef(null);
   const psRef = React.useRef(null);
   const userObj = useSelector(selectUser);
@@ -229,6 +221,7 @@ function Register() {
       });
     } else {
       dispatch(setStudentData(res.data.loadStudentFile));
+      dispatch(setVoidedInvoices(res.data.voided_invoices))
 
       let newArr = [];
       // reset the student enrollment statuses
@@ -328,7 +321,7 @@ function Register() {
                   <CardContent
                     className="flex flex-col flex-auto p-0"
                     style={{
-                      height: "calc(100vh - 187px)",
+                      height: "calc(100vh - 140px)",
                       backgroundColor: "white",
                       overflowY: "hidden",
                       padding: 10,
@@ -394,7 +387,7 @@ function Register() {
                             enterKeyHint="search"
                             // width={100}
 
-                            size="middle"
+                            size="large"
                             //   onChange={onSearchChange}
                           />
                         </Form.Item>
@@ -421,7 +414,7 @@ function Register() {
                         />
                       </motion.div>
                     </div>
-                    <Checkbox>Enable Auto Allocation</Checkbox>
+                    <Checkbox>Enable Auto Reconciliation</Checkbox>
                     <div
                       ref={scrollContainerRef}
                       style={{
@@ -443,10 +436,26 @@ function Register() {
                           size="small"
                           items={[
                             {
-                              key: "6",
+                              key: "8",
+                              label: "Surname",
+                              children: studentFile ? studentFile?.biodata?.surname : null,
+                              span: 3,
+                            },
+                            {
+                              key: "7",
+                              label: "Other Names",
+                              children: studentFile ? studentFile?.biodata?.other_names : null,
+                              span: 3,
+                            },
+                            {
+                              key: "9",
                               label: "Account Balance",
                               children: studentFile?.current_info
-                                ? `UGX ${studentFile?.current_info.account_balance.toLocaleString()}`
+                                ? <Typography.Title level={3} style={{
+                                  padding: 0,
+                                  margin: 0,
+                                  color: "red",
+                                }}>{`UGX ${studentFile?.current_info.account_balance.toLocaleString()}`}</Typography.Title> 
                                 : null,
                               span: 3,
                             },
@@ -507,62 +516,21 @@ function Register() {
                                 `${studentFile?.current_info.recent_enrollment?.acc_yr_title}`,
                               span: 3,
                             },
+                            {
+                              key: "10",
+                              label: "Course Code",
+                              children: studentFile ? studentFile?.course_details?.course?.course_code : null,
+                              span: 3,
+                            },
                           ]}
                         />
                       </div>
                     </div>
                   </CardContent>
-                  {/* <CourseProgress className="" course={course} /> */}
-                  <CardActions
-                    className="justify-start py-8 px-24"
-                    sx={{
-                      backgroundColor: (theme) =>
-                        theme.palette.mode === "light"
-                          ? lighten(theme.palette.background.default, 0.01)
-                          : lighten(theme.palette.background.default, 1),
-                    }}
-                  >
-                    <Space>
-                      <Button2
-                        type="primary"
-                        danger
-                        disabled={!studentFile}
-                        //   disabled={!selectedStd || !image}
-                        // onClick={handleSave}
-                      >
-                        Block
-                      </Button2>
-
-                      <Button2
-                        type="primary"
-                        disabled={!studentFile}
-                        style={{
-                          backgroundColor: studentFile ? "green" : "",
-                        }}
-                        //   disabled={!selectedStd || !image}
-                        // onClick={handleSave}
-                      >
-                        Register Provisionally
-                      </Button2>
-
-                      <Button2
-                        type="primary"
-                        disabled={
-                          !studentFile ||
-                          studentFile?.current_info.enrollment_status ==
-                            "Enrolled"
-                        }
-                        //   disabled={!selectedStd || !image}
-                        onClick={handleEnroll}
-                      >
-                        Enroll
-                      </Button2>
-                    </Space>
-                  </CardActions>
                 </Card>
               </Grid>
               <Grid xs={8.7}>
-                <RegisterTabs />
+                <StudentViewTabs />
               </Grid>
             </Grid>
           </Box>
@@ -737,4 +705,4 @@ function Register() {
   );
 }
 
-export default Register;
+export default StudentView;

@@ -1,29 +1,28 @@
 import React, { useState } from "react";
 import { Card, Spin } from "antd";
-import BioData from "./BioData";
+// import BioData from "./BioData";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  selectActiveRegisterTab,
-  selectDeletingEnrollment,
-  selectLoadingStudentData,
-  setActiveRegisterTab,
-} from "../../../store/financeSlice";
-import EnrollmentTrack from "./enrollment_track/EnrollmentTrack";
-import RegistrationTrack from "./registration_track/RegistrationTrack";
-import Invoices from "./invoices/Invoices";
-import CreditNotes from "./credit_notes/CreditNotes";
-import Ledger from "./ledger/Ledger";
-import Transactions from "./transactions/Transactions";
-import FeesStructure from "./fees_structure/FeesStructure";
+import { setActiveStudentTab, selectActiveStudentTab } from "../store/scholarshipSlice";
+// import EnrollmentTrack from "./enrollment_track/EnrollmentTrack";
+// import RegistrationTrack from "./registration_track/RegistrationTrack";
+// import Invoices from "./invoices/Invoices";
+// import CreditNotes from "./credit_notes/CreditNotes";
+// import Ledger from "./ledger/Ledger";
+// import Transactions from "./transactions/Transactions";
+// import FeesStructure from "./fees_structure/FeesStructure";
 
 const tabListNoTitle = [
+    {
+      key: "bisic_data",
+      label: "Basic Data",
+    },
   {
     key: "invoices",
     label: "Invoices",
   },
   {
-    key: "credit_notes",
-    label: "Credit Notes",
+    key: "disbursements",
+    label: "Disbursements",
   },
   {
     key: "ledger",
@@ -38,10 +37,6 @@ const tabListNoTitle = [
     label: "Fees Structure",
   },
   {
-    key: "biodata",
-    label: "Bio Data",
-  },
-  {
     key: "enrollment_track",
     label: "Enrollment History",
   },
@@ -51,27 +46,25 @@ const tabListNoTitle = [
   },
 ];
 const contentListNoTitle = {
-  invoices: <Invoices />,
-  credit_notes: <CreditNotes />,
-  ledger: <Ledger />,
-  transactions: <Transactions />,
-  fees_structure: <FeesStructure />,
-  biodata: <BioData />,
-  enrollment_track: <EnrollmentTrack />,
-  registration_track: <RegistrationTrack />,
+//   invoices: <Invoices />,
+//   credit_notes: <CreditNotes />,
+//   ledger: <Ledger />,
+//   transactions: <Transactions />,
+//   fees_structure: <FeesStructure />,
+//   biodata: <BioData />,
+//   enrollment_track: <EnrollmentTrack />,
+//   registration_track: <RegistrationTrack />,
 };
-const RegisterTabs = () => {
+const StudentViewTabs = () => {
   const dispatch = useDispatch();
-  const loadingStudentFile = useSelector(selectLoadingStudentData);
-  const deletingEnrollment = useSelector(selectDeletingEnrollment);
   //   const [activeTabKey2, setActiveTabKey2] = useState("biodata");
-  const activeTabKey = useSelector(selectActiveRegisterTab);
+  const activeTabKey = useSelector(selectActiveStudentTab);
 
   //   console.log(activeTabKey);
 
   const onTabChange = (key) => {
     // setActiveTabKey2(key);
-    dispatch(setActiveRegisterTab(key));
+    dispatch(setActiveStudentTab(key));
   };
 
   return (
@@ -102,7 +95,9 @@ const RegisterTabs = () => {
             size: "small",
           }}
         >
-          <Spin spinning={loadingStudentFile || deletingEnrollment}>
+          <Spin 
+        //   spinning={loadingStudentFile}
+          >
             {contentListNoTitle[activeTabKey]}
           </Spin>
         </Card>
@@ -110,4 +105,4 @@ const RegisterTabs = () => {
     </>
   );
 };
-export default RegisterTabs;
+export default StudentViewTabs;

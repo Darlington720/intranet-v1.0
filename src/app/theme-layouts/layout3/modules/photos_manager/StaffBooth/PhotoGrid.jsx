@@ -29,7 +29,7 @@ import { motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import { showMessage } from "@fuse/core/FuseMessage/fuseMessageSlice";
 import convertTimestampToDate from "app/theme-layouts/layout3/utils/convertTimestampToDate";
-import { selectImageTimestamp } from "../store/photosSlice";
+import { selectStaffImageTimestamp } from "../store/photosSlice";
 
 const PhotoGrid = ({ photos, onEditPhoto, onDeletePhoto }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -44,14 +44,14 @@ const PhotoGrid = ({ photos, onEditPhoto, onDeletePhoto }) => {
     blur: 0,
   });
   const dispatch = useDispatch();
-  const imageTimestamp = useSelector(selectImageTimestamp)
+  const imageTimestamp = useSelector(selectStaffImageTimestamp)
 
   useEffect(() => {
     const filtered =
       photos?.filter(
         (photo) =>
-          photo.student_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          photo.student_name.includes(searchTerm)
+          photo.staff_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          photo.staff_name.includes(searchTerm)
       ) || [];
     setFilteredPhotos(filtered);
   }, [searchTerm, photos]);
@@ -135,7 +135,7 @@ const PhotoGrid = ({ photos, onEditPhoto, onDeletePhoto }) => {
                   component="img"
                   height="200"
                   image={`${photo.image}?t=${imageTimestamp}`}
-                  alt={photo.student_name}
+                  alt={photo.staff_name}
                   onClick={() => handlePhotoAction("preview", photo)}
                   sx={{
                     objectFit: "cover",
@@ -147,10 +147,10 @@ const PhotoGrid = ({ photos, onEditPhoto, onDeletePhoto }) => {
                 />
                 <CardContent>
                   <Typography variant="h6" noWrap>
-                    {photo.student_name}
+                    {photo.staff_name}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" noWrap>
-                    Student No: {photo.stdno}
+                    Staff ID: {photo.staff_id}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Last Updated: {photo.last_modified_on ? convertTimestampToDate(parseInt(photo.last_modified_on)): ""}
@@ -252,7 +252,7 @@ const PhotoGrid = ({ photos, onEditPhoto, onDeletePhoto }) => {
             >
               <img
                 src={`${selectedPhoto.image}?t=${imageTimestamp}`}
-                alt={selectedPhoto.student_name}
+                alt={selectedPhoto.staff_name}
                 style={{
                   transform: `scale(${zoom / 100})`,
                   transition: "transform 0.3s ease",

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import React, { Suspense, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import FuseLoading from "@fuse/core/FuseLoading";
@@ -64,24 +63,6 @@ const Setup = React.memo(function Setup() {
       setLoading(false);
     }, 1000);
   }, []);
-=======
-import React, { useMemo } from "react";
-import { useEffect, useState, Suspense } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import FuseLoading from "@fuse/core/FuseLoading";
-import Box from "@mui/material/Box";
-import AppNav2 from "../../components/AppNav2";
-import GraduationClearance from "./tabs/graduation_clearance/GraduationClearance";
-import { selectActiveTab, setActiveTab } from "./store/alumniSlice";
-import { ConfigProvider, theme } from "antd";
-
-function Alumni() {
-  const dispatch = useDispatch();
-  const appExistsInTaskBar = useSelector((state) => state.apps.exists);
-  const [loading, setLoading] = useState(!appExistsInTaskBar ? true : false);
-  const activeApp = useSelector((state) => state.apps.activeApp);
-  const activeTab = useSelector(selectActiveTab);
->>>>>>> cee8be3a1662500971d31c3af664f006c7d64f10
 
   const tabs = [
     {
@@ -118,7 +99,6 @@ function Alumni() {
     <FuseLoading logo={activeApp?.logo} />
   ) : (
     <>
-<<<<<<< HEAD
       {loading ? (
         <FuseLoading logo={activeApp?.logo} />
       ) : (
@@ -147,25 +127,5 @@ function Alumni() {
     </>
   );
 });
-=======
-      <Suspense fallback={<FuseLoading logo={activeApp?.logo} />}>
-        <Box sx={{ flexGrow: 1 }}>
-          <AppNav2
-            tabs={tabs}
-            activeApp={activeApp}
-            activeTab={activeTab}
-            handleTabChange={handleTabChange}
-          />
-          <ConfigProvider  theme={{
-              algorithm: theme.compactAlgorithm,
-            }}>
-          {activeTab === "graduation_clearance" && <GraduationClearance />}
-          </ConfigProvider>
-        </Box>
-      </Suspense>
-    </>
-  );
-}
->>>>>>> cee8be3a1662500971d31c3af664f006c7d64f10
 
 export default Setup;

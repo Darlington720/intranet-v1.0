@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Edit, Info } from "@mui/icons-material";
+import { useEffect, useState } from "react";
+import { Add, Block, Edit, Info, Print } from "@mui/icons-material";
 import { Box } from "@mui/material";
 import {
   Space,
@@ -14,11 +14,14 @@ import {
   Divider,
   Select,
   DatePicker,
+  FloatButton,
 } from "antd";
 import {
   DownOutlined,
   DollarCircleOutlined,
   FileDoneOutlined,
+  BlockOutlined,
+  StopOutlined,
 } from "@ant-design/icons";
 import "./styles.css";
 import { useDispatch, useSelector } from "react-redux";
@@ -28,9 +31,14 @@ import {
   setInvoiceDetailsModalVisible,
   setPaymentModalVisible,
   setSelectedInvoice,
+  setVoidedInvoicesVisible,
+  setVoidInvoiceModalVisible,
+  selectVoidedInvoices
 } from "../../../../store/financeSlice";
 import { showMessage } from "@fuse/core/FuseMessage/fuseMessageSlice";
 import InvoiceDetailsModal from "./InvoiceDetailsModal";
+import VoidedInvoicesModal from "./VoidedInvoicesModal";
+import VoidInvoiceModal from "./VoidInvoiceModal";
 
 const handleChange = (value) => {
   console.log(`selected ${value}`);
@@ -140,13 +148,13 @@ function Invoices() {
       }
     },
   };
-
+  const [expandedRowKeys, setExpandedRowKeys] = useState([]);
   const studentFile = useSelector(selectStudentData);
   const dispatch = useDispatch();
   const groups = formatInvoiceData(studentFile?.invoices);
   const selectedInvoice = useSelector(selectSelectedInvoice);
+  const voidedInvoices = useSelector(selectVoidedInvoices)
 
-  // console.log("groups", groups);
   const expandedRowRender = (row) => {
     // console.log("details", row);
 
@@ -424,6 +432,10 @@ function Invoices() {
     data: group.data,
   }));
 
+  useEffect(() => {
+    setExpandedRowKeys([...data.map((cat) => cat.key)])
+  }, [studentFile])
+
   const handleInvoiceDetails = () => {
     if (!selectedInvoice) {
       dispatch(
@@ -435,9 +447,23 @@ function Invoices() {
 
       return;
     }
-    console.log("selected invoice", selectedInvoice);
+    // console.log("selected invoice", selectedInvoice);
     dispatch(setInvoiceDetailsModalVisible(true));
   };
+
+  const handleVoidInvoice = () => {
+    if (!selectedInvoice) {
+      dispatch(
+        showMessage({
+          message: "Please select an invoice!!!",
+          variant: "info",
+        })
+      );
+
+      return;
+    }
+    dispatch(setVoidInvoiceModalVisible(true))
+  }
 
   return (
     <div>
@@ -462,56 +488,96 @@ function Invoices() {
           // height: 40,
         }}
       >
-        <Button
-          size="small"
-          type="primary"
-          ghost
-          // style={{
-          //   backgroundColor: "dodgerblue",
-          // }}
-          disabled={!studentFile}
-          onClick={() => dispatch(setPaymentModalVisible(true))}
-        >
-          Generate Payment Reference Token
-        </Button>
+        <Dropdown menu={menuProps}>
+          <Button size="small">
+            <Space>
+              Apply
+              <DownOutlined />
+            </Space>
+          </Button>
+        </Dropdown>
 
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-          }}
-        >
-          <Space>
-            <Dropdown menu={menuProps}>
-              <Button size="small">
-                <Space>
-                  Apply
-                  <DownOutlined />
-                </Space>
-              </Button>
-            </Dropdown>
-            <Button
-              disabled={!studentFile}
-              size="small"
-              // type="primary"
-              // ghost
-              icon={<Edit />}
-            >
-              Edit
-            </Button>
+        <Space>
+          <Button
+            size="small"
+            // type="primary"
+            // ghost
+            icon={
+              <Add
+                style={{
+                  fontSize: 15,
+                }}
+              />
+            }
+          >
+            Add
+          </Button>
+          <Button
+            disabled={!studentFile}
+            size="small"
+            type="primary"
+            danger
+            onClick={handleVoidInvoice}
+            icon={
+              <Block
+                style={{
+                  fontSize: 15,
+                }}
+              />
+            }
+          >
+            Void
+          </Button>
+          <Button
+            disabled={!studentFile}
+            size="small"
+            // type="primary"
+            // ghost
+            icon={
+              <Edit
+                style={{
+                  fontSize: 15,
+                }}
+              />
+            }
+          >
+            Edit
+          </Button>
 
-            <Button
-              disabled={!studentFile}
-              size="small"
-              // type="primary"
-              // ghost
-              onClick={handleInvoiceDetails}
-              icon={<Info />}
-            >
-              Details
-            </Button>
-          </Space>
-        </div>
+          <Button
+            disabled={!studentFile}
+            size="small"
+            // type="primary"
+            // ghost
+            onClick={handleInvoiceDetails}
+            icon={
+              <Info
+                style={{
+                  fontSize: 15,
+                }}
+              />
+            }
+          >
+            Details
+          </Button>
+          <Button
+            disabled={!studentFile}
+            size="small"
+            // type="primary"
+            // ghost
+            onClick={handleInvoiceDetails}
+            icon={
+              <Print
+                style={{
+                  fontSize: 15,
+                }}
+              />
+            }
+          >
+            Print
+          </Button>
+        </Space>
+
         <Modal
           width={600}
           title="Commit a Prepayment Transaction"
@@ -688,13 +754,9 @@ function Invoices() {
         theme={{
           components: {
             Table: {
-              // headerBg: "rgba(0, 0, 0, 0.04)",
               borderColor: "lightgray",
               borderRadius: 0,
               headerBorderRadius: 0,
-              // cellFontSize: 10,
-              // fontSize: 13,
-              // lineHeight: 0.8,
             },
           },
         }}
@@ -702,6 +764,7 @@ function Invoices() {
         <Table
           bordered
           showHeader={false}
+          pagination={false}
           // loading={loading || deletingItem}
           size="small"
           columns={columns}
@@ -709,16 +772,33 @@ function Invoices() {
             expandedRowRender,
             defaultExpandAllRows: true,
             // defaultExpandedRowKeys: [...feesCategories.map((cat) => cat.id)],
-            //   expandedRowKeys: [...feesCategories.map((cat) => cat.id)],
+              expandedRowKeys,
+              onExpandedRowsChange: (keys) => {
+                setExpandedRowKeys(keys);
+              }
           }}
           dataSource={data}
           scroll={{
-            y: "calc(100vh - 300px)",
+            y: "calc(100vh - 250px)",
           }}
         />
       </ConfigProvider>
 
       <InvoiceDetailsModal />
+      <VoidedInvoicesModal />
+      <VoidInvoiceModal />
+      <FloatButton
+        type="primary"
+        tooltip={<div>Voided Invoices</div>}
+        badge={{ count: voidedInvoices.length, color: "red" }}
+        style={{
+          bottom: 70,
+        }}
+        icon={<StopOutlined />}
+        onClick={() => {
+          dispatch(setVoidedInvoicesVisible(true));
+        }}
+      />
     </div>
   );
 }

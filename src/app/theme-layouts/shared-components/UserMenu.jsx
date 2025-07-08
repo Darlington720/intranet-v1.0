@@ -14,6 +14,7 @@ import { addAppToTaskBar, updateApps } from "app/store/appSlice";
 import { setToken } from "app/store/tokenSlice";
 import { useApolloClient } from "@apollo/client";
 import { Icon } from "@iconify/react";
+import { url2 } from "app/configs/apiConfig";
 
 function UserMenu(props) {
   const user = useSelector((state) => state.user.user);
@@ -55,7 +56,8 @@ function UserMenu(props) {
           <Avatar
             className="md:mx-4"
             alt="user photo"
-            src={user?.biodata.salutation}
+            // src={user?.biodata.salutation}
+            src={`${url2}/staff_photo/${user?.biodata?.staff_id}`}
           />
         ) : (
           <Avatar className="md:mx-4">{user?.biodata.salutation}</Avatar>

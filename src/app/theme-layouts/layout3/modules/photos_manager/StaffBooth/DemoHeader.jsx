@@ -5,13 +5,13 @@ import IconButton from "@mui/material/IconButton";
 import FuseSvgIcon from "@fuse/core/FuseSvgIcon";
 import { useDispatch } from "react-redux";
 import { setActiveBooth } from "../store/photosSlice";
+import { ArrowLeft } from "lucide-react";
 
-function DemoHeader(props) {
+function DemoHeader() {
   const dispatch = useDispatch();
   const onLeftSidebarToggle = () => {
     dispatch(setActiveBooth(null));
   };
-
   return (
     <div className="flex flex-col w-full sm:py-10 sm:px-40">
       <div>
@@ -20,7 +20,10 @@ function DemoHeader(props) {
       <div className="flex items-center w-full mt-8 -mx-10">
         <div className="flex shrink-0 items-center">
           <IconButton onClick={onLeftSidebarToggle} aria-label="toggle sidebar">
-            <FuseSvgIcon>material-twotone:keyboard_backspace</FuseSvgIcon>
+            <ArrowLeft
+              size={35}
+              style={{ color: "black", fontWeight: "bolder" }}
+            />
           </IconButton>
         </div>
 

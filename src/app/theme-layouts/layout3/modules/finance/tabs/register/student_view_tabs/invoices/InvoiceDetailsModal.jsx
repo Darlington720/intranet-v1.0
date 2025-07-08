@@ -18,6 +18,7 @@ import PerfectScrollbar from "perfect-scrollbar";
 import convertTimestampToDate from "app/theme-layouts/layout3/utils/convertTimestampToDate";
 import formatDateString from "app/theme-layouts/layout3/utils/formatDateToDateAndTime";
 import formatDateToYYYYMMDD from "app/theme-layouts/layout3/utils/convertDateToYYMMDD";
+import { Close } from "@mui/icons-material";
 
 const { Text } = Typography;
 
@@ -216,7 +217,18 @@ function InvoiceDetailsModal() {
 
   return (
     <Modal
-      title="Invoice Details"
+      title={
+        <Typography.Title
+          style={{
+            color: "#fff",
+            padding: 0,
+            margin: 0,
+          }}
+          level={5}
+        >
+          Invoice Details
+        </Typography.Title>
+      }
       // centered
       maskClosable={false}
       open={invoiceDetailsModalVisible}
@@ -229,6 +241,34 @@ function InvoiceDetailsModal() {
         },
       }}
       cancelText="Close"
+      closeIcon={
+        <Close
+          style={{
+            color: "#fff",
+          }}
+        />
+      }
+      styles={{
+        body: {
+          paddingLeft: 10,
+          paddingRight: 10,
+          height: "auto",
+
+          // Ensure the content is not clipped
+        },
+        content: {
+          padding: 0,
+          height: "auto",
+          // Ensure the content is not clipped
+        },
+        footer: {
+          padding: 10,
+        },
+        header: {
+          backgroundColor: "#2f405d",
+          padding: "7px 10px",
+        },
+      }}
     >
       <div
         ref={scrollContainerRef}

@@ -1,62 +1,78 @@
-import React, { useRef, useEffect } from "react";
-import { Table, ConfigProvider } from "antd";
+import React, { useRef, useEffect, useState } from "react";
+import { Table, ConfigProvider, Button } from "antd";
 import PerfectScrollbar from "perfect-scrollbar";
+import { useLazyQuery } from "@apollo/client";
+import { LOAD_STUDENT_LOGS } from "../../../gql/queries";
+import { useDispatch, useSelector } from "react-redux";
+import { showMessage } from "@fuse/core/FuseMessage/fuseMessageSlice";
+import {
+  selectLastLoadedStudentNo,
+  selectStudentDetails,
+  selectStudentLogs,
+  setLastLoadedStudentNo,
+  setStudentLogs,
+} from "../../../store/infoCenterSlice";
 
 const columns = [
   {
     title: "#",
-    dataIndex: "no",
-    key: "index",
+    dataIndex: "#",
+    ellipsis: true,
+    render: (text, record, index) => index + 1,
     width: 40,
-    render: (text, record, index) => renderRow(record, index + 1),
   },
   {
     title: "Action",
     dataIndex: "action",
     ellipsis: true,
-    // render: (text, record, index) => (
-    //   <span>{formatDateString(parseInt(text))}</span>
-    // ),
-    render: (text, record, index) =>
-      renderRow(record, formatDateString(parseInt(text))),
-    width: 200,
+
+    width: 100,
   },
   {
-    title: "Narration",
+    title: "Description",
     ellipsis: true,
-    dataIndex: "narration",
-    render: (text, record, index) => renderRow(record, text),
-    width: 140,
+    dataIndex: "description",
+    width: 180,
   },
   {
     title: "Application",
     ellipsis: true,
-    dataIndex: "application",
-    render: (text, record, index) => renderRow(record, text),
-    width: 110,
+    dataIndex: "module",
+    width: 100,
   },
   {
     title: "Action By",
     dataIndex: "action_by",
     ellipsis: true,
-    width: 100,
-    // rener: (text, record, index) => <>{`${record.applicant.gender}`}</>,
-    render: (text, record, index) => renderRow(record, text),
-    // sorter: (a, b) => a.age - b.age,
+    width: 150,
   },
   {
     title: "Action Date",
     dataIndex: "action_date",
-    width: 100,
-    // rener: (text, record, index) => <>{`${record.applicant.gender}`}</>,
-    render: (text, record, index) => renderRow(record, record.biodata.gender),
-    // sorter: (a, b) => a.age - b.age,
+    render: (text, record) => {
+      const formatted = new Date(text).toLocaleString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      return formatted;
+    },
+    width: 150,
+    ellipsis: true,
   },
 ];
 
 const StudentLogs = () => {
+  const dispatch = useDispatch();
+  const studentDetails = useSelector(selectStudentDetails);
   const scrollContainerRef = useRef(null);
   const psRef = useRef(null);
+  const [loadStudentLogs, { error, loading, data }] =
+    useLazyQuery(LOAD_STUDENT_LOGS);
+  const studentLogs = useSelector(selectStudentLogs);
+  const lastLoadedStudentNo = useSelector(selectLastLoadedStudentNo);
 
   useEffect(() => {
     if (scrollContainerRef.current) {
@@ -74,11 +90,53 @@ const StudentLogs = () => {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (error) {
+      dispatch(
+        showMessage({
+          message: error.message,
+          variant: "error",
+        })
+      );
+    }
+  }, [error]);
+
+  useEffect(() => {
+    // Clear logs only if studentNo has changed
+    if (
+      studentDetails?.student_no &&
+      lastLoadedStudentNo &&
+      studentDetails.student_no !== lastLoadedStudentNo
+    ) {
+      dispatch(setStudentLogs([]));
+      dispatch(setLastLoadedStudentNo(null)); // mark logs as outdated
+    }
+  }, [studentDetails?.student_no]);
+
+  const handleLoadLogs = async () => {
+    const currentStudentNo = studentDetails?.student_no;
+    if (!currentStudentNo || currentStudentNo === lastLoadedStudentNo) return;
+
+    const res = await loadStudentLogs({
+      variables: {
+        studentNo: currentStudentNo,
+      },
+    });
+
+    if (res?.data?.student_logs) {
+      dispatch(setStudentLogs(res.data.student_logs));
+      dispatch(setLastLoadedStudentNo(currentStudentNo));
+    }
+  };
+
   return (
     <>
       <div
         style={{
           marginBottom: 10,
+          display: "flex",
+          justifyContent: "space-between",
         }}
       >
         <span
@@ -90,18 +148,16 @@ const StudentLogs = () => {
         >
           Student Logs
         </span>
+
+        <Button
+          size="small"
+          type="primary"
+          loading={loading}
+          onClick={handleLoadLogs}
+        >
+          Load Logs
+        </Button>
       </div>
-      {/* <div
-        ref={scrollContainerRef}
-        style={{
-          position: "relative",
-          height: 360, // Adjust this height as needed
-          // marginTop: 10,
-          // backgroundColor: "red",
-          padding: 20,
-          overflow: "hidden", // Hide default scrollbars
-        }}
-      ></div> */}
       <ConfigProvider
         theme={{
           components: {
@@ -110,17 +166,17 @@ const StudentLogs = () => {
               borderColor: "lightgray",
               borderRadius: 0,
               headerBorderRadius: 0,
-              cellFontSize: 10,
-              fontSize: 13,
-              lineHeight: 0.8,
+              // cellFontSize: 10,
+              // fontSize: 13,
+              // lineHeight: 0.8,
             },
           },
         }}
       >
         <Table
           columns={columns}
-          dataSource={[]}
-          // loading={loadingApplications |}
+          dataSource={studentLogs}
+          loading={loading}
           rowKey="std_id"
           bordered
           sticky
@@ -133,14 +189,8 @@ const StudentLogs = () => {
             position: ["bottomRight"],
           }}
           scroll={{
-            y: "calc(100vh - 200px)", // Set the same height as in the style to ensure content scrolls
-            // x: "100vw",
+            y: "calc(100vh - 200px)",
           }}
-
-          // scroll={{
-          //   y: "calc(100vh - 370px)",
-          //   x: "100vw",
-          // }}
         />
       </ConfigProvider>
     </>

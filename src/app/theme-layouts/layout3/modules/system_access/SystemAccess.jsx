@@ -7,6 +7,7 @@ import { selectActiveTab, setActiveTab } from "./store/systemAccessSlice";
 import RolePermissions from "./tabs/role_permissions/RolePermissions";
 import Users from "./tabs/users/Users";
 import AppNav from "../../components/AppNav";
+import SystemLogs from "./tabs/system_logs/SystemLogs";
 
 const tabs = ["Role Permissions", "Users", "System Logs", "Other Configs"];
 
@@ -46,6 +47,7 @@ function SystemAccess() {
 
           {activeTab === 0 && <RolePermissions />}
           {activeTab === 1 && <Users />}
+          {activeTab === 2 && <SystemLogs />}
         </Box>
       </Suspense>
     </>

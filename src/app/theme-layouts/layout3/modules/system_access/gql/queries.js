@@ -46,4 +46,39 @@ const LOAD_USERS = gql`
   }
 `;
 
-export { LOAD_ROLES, LOAD_ROLE_MODULES, LOAD_USERS };
+const LOAD_USER_ACTION_LOGS = gql`
+ query User_action_logs($userId: String!) {
+  user_action_logs(user_id: $userId) {
+      id
+      user_id
+      name
+      action_type
+      user_type
+      module
+      description
+      ip_address
+      timestamp
+      user_agent
+    }
+  }
+`;
+
+const LOAD_SYSTEM_USERS = gql`
+  query system_users {
+    system_users {
+      user_id
+      staff_id
+      name
+      user_type
+      last_activity
+    }
+  }
+`;
+
+export {
+  LOAD_ROLES,
+  LOAD_ROLE_MODULES,
+  LOAD_USERS,
+  LOAD_USER_ACTION_LOGS,
+  LOAD_SYSTEM_USERS,
+};

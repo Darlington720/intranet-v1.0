@@ -157,7 +157,7 @@ const PhotoEditor = ({selectedStd, image, onSave, open, onClose, savingImage = f
   return (
     <DialogContainer open={open} onClose={onClose} maxWidth="lg" fullWidth>
       <DialogTitle sx={{ m: 0, p: 2 }}>
-        Photo Editor - {selectedStd?.student_no} ({selectedStd?.name})
+        Photo Editor - {selectedStd?.staff_id} ({selectedStd?.name})
         <IconButton
           aria-label="close"
           onClick={onClose}

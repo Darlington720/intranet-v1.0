@@ -31,6 +31,9 @@ const initialState = {
   clearanceStdsTotal: 0,
   clearanceDetailsModalVisible: false,
   selectedStudent: null,
+  voidedInvoicesVisible: false,
+  voidInvoiceModalVisible: false,
+  voidedInvoices: []
 };
 /**
  * The File Manager App slice.
@@ -123,6 +126,15 @@ export const registrationSlice = createSlice({
     setSelectedStudent: (state, action) => {
       state.selectedStudent = action.payload;
     },
+    setVoidedInvoicesVisible: (state, action) => {
+      state.voidedInvoicesVisible = action.payload;
+    },
+    setVoidInvoiceModalVisible: (state, action) => {
+      state.voidInvoiceModalVisible = action.payload;
+    },
+    setVoidedInvoices: (state, action) => {
+      state.voidedInvoices = action.payload;
+    },
   },
 
   selectors: {
@@ -161,6 +173,9 @@ export const registrationSlice = createSlice({
     selectClearanceDetailsModalVisible: (state) =>
       state.clearanceDetailsModalVisible,
     selectSelectedStudent: (state) => state.selectedStudent,
+    selectVoidedInvoicesVisible: (state) => state.voidedInvoicesVisible,
+    selectVoidInvoiceModalVisible: (state) => state.voidInvoiceModalVisible,
+    selectVoidedInvoices: (state) => state.voidedInvoices,
   },
 });
 /**
@@ -187,7 +202,6 @@ export const {
   setTokenRes,
   setInvoiceDetailsModalVisible,
   setSelectedInvoice,
-  
   setClearanceStdsSummary,
   setClearanceFillForm,
   setSelectedClearanceStdsSummary,
@@ -198,6 +212,9 @@ export const {
   setClearanceStdsTotal,
   setClearanceDetailsModalVisible,
   setSelectedStudent,
+  setVoidedInvoicesVisible,
+  setVoidInvoiceModalVisible,
+  setVoidedInvoices,
 } = registrationSlice.actions;
 
 export const {
@@ -219,7 +236,6 @@ export const {
   selectTokenRes,
   selectInvoiceDetailsModalVisible,
   selectSelectedInvoice,
-
   selectClearanceStdsSummary,
   selectClearanceFillForm,
   selectSelectedClearanceStdsSummary,
@@ -230,5 +246,8 @@ export const {
   selectClearanceStdsTotal,
   selectClearanceDetailsModalVisible,
   selectSelectedStudent,
+  selectVoidedInvoicesVisible,
+  selectVoidInvoiceModalVisible,
+  selectVoidedInvoices,
 } = injectedSlice.selectors;
 export default registrationSlice.reducer;

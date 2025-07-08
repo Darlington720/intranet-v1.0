@@ -361,7 +361,7 @@ function Invoices() {
 
       return;
     }
-    console.log("selected invoice", selectedInvoice);
+    // console.log("selected invoice", selectedInvoice);
     dispatch(setInvoiceDetailsModalVisible(true));
   };
 

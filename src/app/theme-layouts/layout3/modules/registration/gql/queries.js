@@ -1,7 +1,7 @@
 import { gql } from "@apollo/client";
 
 const LOAD_STUDENT_FILE = gql`
-  query loadStudentFile($studentNo: String) {
+  query loadStudentFile($studentNo: String!) {
     loadStudentFile(student_no: $studentNo) {
       id
       form_no

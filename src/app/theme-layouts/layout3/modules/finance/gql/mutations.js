@@ -108,10 +108,20 @@ const GENERATE_PRT = gql`
   }
 `;
 
+const VOID_INVOICE = gql`
+  mutation voidInvoice($invoiceNo: String!, $voidedReason: String) {
+    voidInvoice(invoice_no: $invoiceNo, voided_reason: $voidedReason) {
+      message
+      success
+    }
+  }
+`;
+
 export {
   ENROLL_STUDENT,
   SAVE_PAST_ENROLLMENT,
   DELETE_ENROLLMENT,
   EDIT_ENROLLMENT,
   GENERATE_PRT,
+  VOID_INVOICE
 };

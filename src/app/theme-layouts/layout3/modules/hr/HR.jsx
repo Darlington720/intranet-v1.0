@@ -26,7 +26,7 @@ function HR() {
   const tabs = [
     { label: "Dashboard", value: "dashboard" },
     { label: "Employees", value: "employees" },
-    // { label: "Appraisals", value: "appraisals" },
+    { label: "Appraisals", value: "appraisals" },
     // { label: "Travel", value: "travel" },
     // { label: "Payroll", value: "payroll" },
     // { label: "Leave", value: "leave" },

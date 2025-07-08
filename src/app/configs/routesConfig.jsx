@@ -127,6 +127,10 @@ const Examinations = lazy(
   () => import("app/theme-layouts/layout3/modules/examinations/Examinations")
 );
 
+const Scholarships  = lazy(
+  () => import("app/theme-layouts/layout3/modules/scholarships/Scholarships")
+);
+
 const MemoizedProgramsAndCourses = memo(ProgramsAndCourses);
 const MemoizedAdmissions = memo(Admissions);
 const MemoizedSetup = memo(Setup);
@@ -146,10 +150,10 @@ const MemoizedVoting = memo(Voting);
 const MemoizedCounselling = memo(Counselling);
 const MemoizedGraduation = memo(Graduation);
 const MemoizedLibrary = memo(Library);
-
 const MemoizedMedia = memo(Media);
 const MemoizedTimetable = memo(Timetable);
 const MemoizedExaminations= memo(Examinations);
+const MemoizedScholarships = memo(Scholarships);
 
 const routeConfigs = [ExampleConfig, SignOutConfig, SignInConfig, SignUpConfig];
 /**
@@ -212,6 +216,14 @@ const routes = [
     element: (
       <ProtectedRoute>
         <MemoizedFinance />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "scholarships",
+    element: (
+      <ProtectedRoute>
+        <MemoizedScholarships />
       </ProtectedRoute>
     ),
   },

@@ -12,7 +12,7 @@ import {
 } from "./store/financeSlice";
 import { showMessage } from "@fuse/core/FuseMessage/fuseMessageSlice";
 import { updateAccYrs } from "../setup/store/setUpSlice";
-import Register from "./tabs/register/Register";
+import StudentView from "./tabs/register/StudentView";
 import FinanceReports from "./tabs/reports/FinanceReports";
 import { LOAD_ENROLLMENT_STATUSES } from "./gql/queries";
 import GraduationClearance from "./tabs/graduation_clearance/GraduationClearance";
@@ -128,7 +128,7 @@ function Finance() {
               activeTab={activeTab}
               handleTabChange={handleTabChange}
             />
-            {activeTab === "student_view" && <Register />}
+            {activeTab === "student_view" && <StudentView />}
             {activeTab === "reports" && <FinanceReports />}
             {activeTab === "graduation_clearance" && <GraduationClearance />}
             {/* {activeTab === "transactions" && <FinanceTransactions />} */}

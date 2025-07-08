@@ -88,16 +88,16 @@ function CategoryForm() {
       });
 
       form2.setFieldsValue({
-        added_by: `${selectedCategory.added_user.title} ${selectedCategory.added_user.staff_name}`,
+        added_by: `${selectedCategory.added_user?.title} ${selectedCategory.added_user?.staff_name}`,
       });
 
       if (selectedCategory.modified_user) {
         form2.setFieldsValue({
-          modified_by: `${selectedCategory.modified_user.title} ${selectedCategory.modified_user.staff_name}`,
+          modified_by: `${selectedCategory.modified_user?.title} ${selectedCategory.modified_user?.staff_name}`,
         });
         form2.setFieldsValue({
           modified_on: formatToShortDate(
-            parseInt(selectedCategory.modified_on)
+            parseInt(selectedCategory?.modified_on)
           ),
         });
       } else {

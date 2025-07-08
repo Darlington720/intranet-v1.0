@@ -13,6 +13,8 @@ const initialState = {
   loadingRoleModules: false,
   selectedPermissions: [],
   selectedUser: null,
+  userActionLogs: [],
+  selectedSystemUser: null,
 };
 
 export const systemAccessSlice = createSlice({
@@ -52,6 +54,12 @@ export const systemAccessSlice = createSlice({
     setSelectedUser: (state, action) => {
       state.selectedUser = action.payload;
     },
+    setUserActionLogs: (state, action) => {
+      state.userActionLogs = action.payload;
+    },
+    setSelectedSystemUser: (state, action) => {
+      state.selectedSystemUser = action.payload;
+    }
   },
 
   selectors: {
@@ -66,6 +74,8 @@ export const systemAccessSlice = createSlice({
     selectRoleModules: (state) => state.roleModules,
     selectSelectedPermissions: (state) => state.selectedPermissions,
     selectSelectedUser: (state) => state.selectedUser,
+    selectUserActionLogs: (state) => state.userActionLogs,
+    selectSelectedSystemUser: (state) => state.selectedSystemUser,
   },
 });
 /**
@@ -85,6 +95,8 @@ export const {
   setRoleModules,
   setSelectedPermissions,
   setSelectedUser,
+  setUserActionLogs,
+  setSelectedSystemUser,
 } = systemAccessSlice.actions;
 
 export const {
@@ -99,5 +111,7 @@ export const {
   selectRoleModules,
   selectSelectedPermissions,
   selectSelectedUser,
+  selectUserActionLogs,
+  selectSelectedSystemUser,
 } = injectedSlice.selectors;
 export default systemAccessSlice.reducer;

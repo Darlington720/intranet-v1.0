@@ -141,12 +141,12 @@ const GET_STUDENT_DETAILS = gql`
         nin
       }
       next_of_kin {
-          full_name
-          email
-          relation
-          phone_no
-          address
-        }
+        full_name
+        email
+        relation
+        phone_no
+        address
+      }
       intake_id
       campus_id
       study_time_id
@@ -243,8 +243,22 @@ const GET_STUDENT_DETAILS = gql`
   }
 `;
 
+const LOAD_STUDENT_LOGS = gql`
+  query student_logs($studentNo: String!) {
+  student_logs(student_no: $studentNo) {
+    id
+    action
+    action_by
+    action_date
+    description
+    module
+  }
+}
+`;
+
 export {
   GET_ALL_PROGRAMMES_CATEGORISED_BY_COLLEGES,
   GET_STUDENTS,
   GET_STUDENT_DETAILS,
+  LOAD_STUDENT_LOGS
 };

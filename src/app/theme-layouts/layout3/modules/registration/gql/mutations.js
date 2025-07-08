@@ -6,7 +6,6 @@ const ENROLL_STUDENT = gql`
     $studentNo: String!
     $semester: Int!
     $enrollmentStatus: String!
-    $enrolledBy: String!
     $studyYr: Int!
   ) {
     enrollStudent(
@@ -14,7 +13,6 @@ const ENROLL_STUDENT = gql`
       student_no: $studentNo
       semester: $semester
       enrollment_status: $enrollmentStatus
-      enrolled_by: $enrolledBy
       study_yr: $studyYr
     ) {
       message

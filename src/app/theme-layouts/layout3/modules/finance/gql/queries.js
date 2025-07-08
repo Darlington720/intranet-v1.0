@@ -1,7 +1,7 @@
 import { gql } from "@apollo/client";
 
-const LOAD_STUDENT_FILE = gql`
-  query loadStudentFile($studentNo: String) {
+const LOAD_STUDENT_FILE_WITH_VOID = gql`
+  query loadStudentFileWithVoid($studentNo: String!) {
     loadStudentFile(student_no: $studentNo) {
       id
       form_no
@@ -141,6 +141,16 @@ const LOAD_STUDENT_FILE = gql`
       is_on_sponsorship
       is_resident
     }
+    voided_invoices(student_no: $studentNo) {
+    invoice_no
+    invoice_date
+    currency_code
+    total_amount
+    voided_on
+    voided_by
+    voided_by_name
+    voided_reason
+  }
   }
 `;
 
@@ -154,4 +164,4 @@ const LOAD_ENROLLMENT_STATUSES = gql`
   }
 `;
 
-export { LOAD_STUDENT_FILE, LOAD_ENROLLMENT_STATUSES };
+export { LOAD_STUDENT_FILE_WITH_VOID, LOAD_ENROLLMENT_STATUSES };

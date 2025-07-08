@@ -83,7 +83,7 @@ const DataTable = React.memo(() => {
     notifyOnNetworkStatusChange: true,
   });
 
-  // console.log("fees categories", feesCategories);
+  // console.log("feesCategories", feesCategories);
 
   const [
     deleteFeesItem,
@@ -274,7 +274,7 @@ const DataTable = React.memo(() => {
     ];
 
     const items = filteredFeesItems.filter(
-      (item) => item.category.id == row.key
+      (item) => item.category?.id == row.key
     );
 
     // console.log("data2", filteredFeesItems);
@@ -302,7 +302,7 @@ const DataTable = React.memo(() => {
   const data = feesCategories
     .filter((cat) => {
       const items = filteredFeesItems.filter(
-        (item) => item.category.id == cat.id
+        (item) => item.category?.id == cat.id
       );
       return items.length > 0; // Only keep categories with matching items
     })
@@ -463,3 +463,8 @@ const DataTable = React.memo(() => {
   );
 });
 export default DataTable;
+
+
+
+
+

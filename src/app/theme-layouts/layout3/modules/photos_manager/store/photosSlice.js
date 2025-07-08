@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { url2 } from "app/configs/apiConfig";
 import { rootReducer } from "app/store/lazyLoadedSlices";
 
 const initialState = {
@@ -8,11 +9,18 @@ const initialState = {
   selectedOption: {
     student_no: "",
   },
-  imagePreview: `http://tredumo.com/api/student_image/0`,
+  imagePreview: `${url2}/student_photo/0`,
+  staffImagePreview: `${url2}/staff_photo/0`,
   imageToUpload: null,
   recentUploads: [],
   selectedRow: null,
-  images: []
+  images: [],
+  staffImages: [],
+  imageTimestamp: Date.now(),
+  staffImageTimestamp: Date.now(),
+  selectedStaff: {
+    staff_id: "",
+  }
 };
 /**
  * The File Manager App slice.
@@ -38,6 +46,9 @@ export const photosSlice = createSlice({
     setImagePreview: (state, action) => {
       state.imagePreview = action.payload;
     },
+    setStaffImagePreview: (state, action) => {
+      state.staffImagePreview = action.payload;
+    },
     setImageToUpload: (state, action) => {
       state.imageToUpload = action.payload;
     },
@@ -50,6 +61,18 @@ export const photosSlice = createSlice({
     setImages: (state, action) => {
       state.images = action.payload;
     },
+    setImageTimestamp: (state, action) => {
+      state.imageTimestamp = action.payload;
+    },
+    setSelectedStaff: (state, action) => {
+      state.selectedStaff = action.payload;
+    },
+    setStaffImageTimestamp: (state, action) => {
+      state.staffImageTimestamp = action.payload;
+    },
+    setStaffImages: (state, action) => {
+      state.staffImages = action.payload;
+    },
   },
   selectors: {
     selectActiveBooth: (state) => state.activeBooth,
@@ -57,10 +80,16 @@ export const photosSlice = createSlice({
     selectOptions: (state) => state.options,
     selectSelectedOption: (state) => state.selectedOption,
     selectImagePreview: (state) => state.imagePreview,
+    selectStaffImagePreview: (state) => state.staffImagePreview,
     selectImageToUpload: (state) => state.imageToUpload,
     selectRecentUploads: (state) => state.recentUploads,
     selectSelectedRow: (state) => state.selectedRow,
     selectImages: (state) => state.images,
+    selectImageTimestamp: (state) => state.imageTimestamp,
+    selectSelectedStaff: (state) => state.selectedStaff,
+    selectStaffImageTimestamp: (state) => state.staffImageTimestamp,
+    selectStaffImages: (state) => state.staffImages,
+
   },
 });
 /**
@@ -74,10 +103,15 @@ export const {
   setStdOptions,
   setSelectedOption,
   setImagePreview,
+  setStaffImagePreview,
   setImageToUpload,
   setRecentUploads,
   setSelectedRow,
-  setImages
+  setImages,
+  setImageTimestamp,
+  setSelectedStaff,
+  setStaffImageTimestamp,
+  setStaffImages,
 } = photosSlice.actions;
 export const {
   selectActiveBooth,
@@ -85,9 +119,14 @@ export const {
   selectOptions,
   selectSelectedOption,
   selectImagePreview,
+  selectStaffImagePreview,
   selectImageToUpload,
   selectRecentUploads,
   selectSelectedRow,
-  selectImages
+  selectImages,
+  selectImageTimestamp,
+  selectSelectedStaff,
+  selectStaffImageTimestamp,
+  selectStaffImages,
 } = injectedSlice.selectors;
 export default photosSlice.reducer;

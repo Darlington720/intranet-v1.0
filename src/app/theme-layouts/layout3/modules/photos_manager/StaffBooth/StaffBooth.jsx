@@ -1,12 +1,5 @@
-import React from "react";
 import { useEffect, useState } from "react";
-import ClickableCardComponent from "./BackComponent";
-import PhotosManager from "../PhotosManager";
-import Input from "@mui/material/Input";
-import Paper from "@mui/material/Paper";
-import FuseSvgIcon from "@fuse/core/FuseSvgIcon";
 import DemoContent from "./DemoContent";
-import DemoSidebar from "./DemoSideBar";
 import DemoHeader from "./DemoHeader";
 import { styled } from "@mui/material/styles";
 import FusePageCarded from "@fuse/core/FusePageCarded";
@@ -37,11 +30,11 @@ function StaffBooth() {
     setSearchText(event.target.value);
   }
   const handleCardClick = () => {
-    console.log("Card clicked");
+    // console.log("Card clicked");
   };
 
   const handleBackClick = () => {
-    console.log("Back button clicked");
+    // console.log("Back button clicked");
   };
 
   return (
@@ -66,7 +59,7 @@ function StaffBooth() {
       rightSidebarOnClose={() => {
         setRightSidebarOpen(false);
       }}
-      rightSidebarContent={<DemoSidebar />}
+      // rightSidebarContent={<DemoSidebar />}
       scroll="content"
     />
   );

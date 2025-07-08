@@ -299,6 +299,7 @@ const GET_MY_PROFILE = gql`
         id
         email
         salutation
+        staff_id
         surname
         other_names
         telno
