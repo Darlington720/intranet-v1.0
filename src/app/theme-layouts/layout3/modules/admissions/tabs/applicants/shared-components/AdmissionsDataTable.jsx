@@ -203,18 +203,20 @@ function AdmissionsDataTable() {
   const currentPage = useSelector(selectApplicantsCurrentPage);
   const [selectedRows, setSelectedRows] = useState(new Set());
   const [sortColumns, setSortColumns] = useState([]);
-  const searchActive = useSelector(selectSearchActive)
-  const applicantSearchValue = useSelector(selectApplicantSearchValue)
+  const searchActive = useSelector(selectSearchActive);
+  const applicantSearchValue = useSelector(selectApplicantSearchValue);
 
-  const [loadApplications, { error: loadFormsErr, loading: loadingForms, refetch: refetchForms }] =
-    useLazyQuery(LOAD_APPLICATIONS, {
-      notifyOnNetworkStatusChange: true, // Essential for accurate loading state
-      fetchPolicy: "no-cache",
-    });
+  const [
+    loadApplications,
+    { error: loadFormsErr, loading: loadingForms, refetch: refetchForms },
+  ] = useLazyQuery(LOAD_APPLICATIONS, {
+    notifyOnNetworkStatusChange: true, // Essential for accurate loading state
+    fetchPolicy: "no-cache",
+  });
 
   const [
     globalSearchApplications,
-    { error: globalErr, loading: searchingGlobally, refetch: searchRefetch  },
+    { error: globalErr, loading: searchingGlobally, refetch: searchRefetch },
   ] = useLazyQuery(GLOBAL_SEARCH, {
     fetchPolicy: "network-only",
   });
@@ -484,8 +486,8 @@ function AdmissionsDataTable() {
       return;
     }
 
-    dispatch(setSearchActive(true))
-    dispatch(setApplicantSearchValue(value))
+    dispatch(setSearchActive(true));
+    dispatch(setApplicantSearchValue(value));
 
     dispatch(setApplicantsCurrentPage(1));
 
@@ -661,9 +663,9 @@ function AdmissionsDataTable() {
     try {
       // Set loading state
       dispatch(setLoadingApplications(true));
-      
+
       let response;
-      
+
       if (searchActive && applicantSearchValue) {
         // If search was active and we have a search value
         response = await searchRefetch({
@@ -674,10 +676,14 @@ function AdmissionsDataTable() {
           start: (currentPage - 1) * pageSize,
           limit: pageSize,
         });
-        
+
         if (response?.data?.global_search) {
-          dispatch(setTotalApplicants(response.data.global_search.total_records));
-          dispatch(setApplications(response.data.global_search.applications || []));
+          dispatch(
+            setTotalApplicants(response.data.global_search.total_records)
+          );
+          dispatch(
+            setApplications(response.data.global_search.applications || [])
+          );
         }
       } else {
         // If no search or no search value, use regular fetch
@@ -692,7 +698,6 @@ function AdmissionsDataTable() {
         }
 
         await fetchApplications(currentPage);
-      
       }
     } catch (error) {
       dispatch(
@@ -809,7 +814,9 @@ function AdmissionsDataTable() {
               placeholder="Global Search"
               onSearch={onSearch}
               value={applicantSearchValue}
-              onChange={(e) => dispatch(setApplicantSearchValue(e.target.value))} 
+              onChange={(e) =>
+                dispatch(setApplicantSearchValue(e.target.value))
+              }
               size="small"
               style={{
                 width: 200,

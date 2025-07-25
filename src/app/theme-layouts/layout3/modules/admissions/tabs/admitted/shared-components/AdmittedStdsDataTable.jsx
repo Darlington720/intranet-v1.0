@@ -277,8 +277,8 @@ function AdmittedStdsDataTable() {
   const currentPage = useSelector(selectAdmittedStdsCurrentPage);
   const [selectedRows, setSelectedRows] = useState(new Set());
   const [sortColumns, setSortColumns] = useState([]);
-  const admittedSearchActive = useSelector(selectAdmittedSearchActive)
-  const admittedSearchValue = useSelector(selectAdmittedSearchValue)
+  const admittedSearchActive = useSelector(selectAdmittedSearchActive);
+  const admittedSearchValue = useSelector(selectAdmittedSearchValue);
 
   const [
     pushToStdInfoCenter,
@@ -296,12 +296,7 @@ function AdmittedStdsDataTable() {
 
   const [
     loadAdmittedStudents,
-    {
-      error: loadFormsErr,
-      loading: loadingAdmittedStds,
-      data,
-      refetch,
-    },
+    { error: loadFormsErr, loading: loadingAdmittedStds, data, refetch },
   ] = useLazyQuery(LOAD_ADMITTED_STUDENTS, {
     notifyOnNetworkStatusChange: true,
     fetchPolicy: "no-cache",
@@ -602,8 +597,8 @@ function AdmittedStdsDataTable() {
       return;
     }
 
-    dispatch(setAdmittedSearchActive(true))
-    dispatch(setAdmittedSearchValue(value))
+    dispatch(setAdmittedSearchActive(true));
+    dispatch(setAdmittedSearchValue(value));
 
     const response = await globalSearchApplications({
       variables: {
@@ -612,7 +607,7 @@ function AdmittedStdsDataTable() {
         admissionsId: null,
         start: 0,
         limit: pageSize,
-        admitted: true
+        admitted: true,
       },
     });
 
@@ -834,12 +829,11 @@ function AdmittedStdsDataTable() {
     dispatch(setAdmittedStdsCurrentPage(page));
   };
 
-
   const handleReload = async () => {
     try {
       // Set loading state
       dispatch(setLoadingAdmittedStds(true));
-      
+
       if (admittedSearchActive && admittedSearchValue) {
         // If search was active and we have a search value
         const response = await searchRefetch({
@@ -848,9 +842,9 @@ function AdmittedStdsDataTable() {
           admissionsId: null,
           admitted: true,
           start: 0,
-          limit: pageSize
+          limit: pageSize,
         });
-        
+
         if (response?.data?.global_search_applications) {
           dispatch(
             setTotalAdmittedStds(
@@ -875,8 +869,7 @@ function AdmittedStdsDataTable() {
           return;
         }
 
-       await fetchAdmittedStds(currentPage)
-        
+        await fetchAdmittedStds(currentPage);
       }
     } catch (error) {
       dispatch(
@@ -995,7 +988,7 @@ function AdmittedStdsDataTable() {
               placeholder="Global Search"
               onSearch={onSearch}
               value={admittedSearchValue}
-              onChange={(e) => dispatch(setAdmittedSearchValue(e.target.value))} 
+              onChange={(e) => dispatch(setAdmittedSearchValue(e.target.value))}
               size="small"
             />
 
