@@ -269,6 +269,7 @@ const AllLevels = ({ panelWidth }) => {
       variables: {
         campusId: null,
       },
+      fetchPolicy: "network-only",
     });
 
   const [
