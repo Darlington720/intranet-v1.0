@@ -119,7 +119,7 @@ function StudentView() {
     if (data) {
       if (data.loadStudentFile) {
         dispatch(setStudentData(data.loadStudentFile));
-        dispatch(setVoidedInvoices(data.voided_invoices))
+        dispatch(setVoidedInvoices(data.voided_invoices));
       }
     }
   }, [data]);
@@ -221,7 +221,7 @@ function StudentView() {
       });
     } else {
       dispatch(setStudentData(res.data.loadStudentFile));
-      dispatch(setVoidedInvoices(res.data.voided_invoices))
+      dispatch(setVoidedInvoices(res.data.voided_invoices));
 
       let newArr = [];
       // reset the student enrollment statuses
@@ -438,25 +438,32 @@ function StudentView() {
                             {
                               key: "8",
                               label: "Surname",
-                              children: studentFile ? studentFile?.biodata?.surname : null,
+                              children: studentFile
+                                ? studentFile?.biodata?.surname
+                                : null,
                               span: 3,
                             },
                             {
                               key: "7",
                               label: "Other Names",
-                              children: studentFile ? studentFile?.biodata?.other_names : null,
+                              children: studentFile
+                                ? studentFile?.biodata?.other_names
+                                : null,
                               span: 3,
                             },
                             {
                               key: "9",
                               label: "Account Balance",
-                              children: studentFile?.current_info
-                                ? <Typography.Title level={3} style={{
-                                  padding: 0,
-                                  margin: 0,
-                                  color: "red",
-                                }}>{`UGX ${studentFile?.current_info.account_balance.toLocaleString()}`}</Typography.Title> 
-                                : null,
+                              children: studentFile?.current_info ? (
+                                <Typography.Title
+                                  level={3}
+                                  style={{
+                                    padding: 0,
+                                    margin: 0,
+                                    color: "red",
+                                  }}
+                                >{`UGX ${studentFile?.current_info.account_balance.toLocaleString()}`}</Typography.Title>
+                              ) : null,
                               span: 3,
                             },
                             {
@@ -519,7 +526,10 @@ function StudentView() {
                             {
                               key: "10",
                               label: "Course Code",
-                              children: studentFile ? studentFile?.course_details?.course?.course_code : null,
+                              children: studentFile
+                                ? studentFile?.course_details?.course
+                                    ?.course_code
+                                : null,
                               span: 3,
                             },
                           ]}

@@ -1,7 +1,7 @@
 const formatDateString = (timestamp) => {
-  if (!timestamp || isNaN(timestamp) || timestamp <= 0) {
-    return "Invalid Date";
-  }
+  // if (!timestamp || isNaN(timestamp) || timestamp <= 0) {
+  //   return "Invalid Date";
+  // }
 
   const date = new Date(timestamp);
 

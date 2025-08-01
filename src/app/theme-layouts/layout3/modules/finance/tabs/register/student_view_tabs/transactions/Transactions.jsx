@@ -1,4 +1,4 @@
-import { Edit, Info, Refresh } from "@mui/icons-material";
+import { Close, Edit, Info, Refresh } from "@mui/icons-material";
 import { Box } from "@mui/material";
 import { borderBottom } from "@mui/system";
 import {
@@ -15,6 +15,9 @@ import {
   DatePicker,
   Form,
   Input,
+  Typography,
+  InputNumber,
+  Flex,
 } from "antd";
 import React, { useEffect, useState } from "react";
 import "./styles.css";
@@ -23,10 +26,14 @@ import {
   selectStudentData,
   setPaymentModalVisible,
 } from "../../../../store/financeSlice";
-import { useLazyQuery } from "@apollo/client";
+import { useLazyQuery, useMutation } from "@apollo/client";
 import { LOAD_STUDENT_TRANSACTIONS } from "app/theme-layouts/layout3/modules/setup/gql/queries";
 import { showMessage } from "@fuse/core/FuseMessage/fuseMessageSlice";
 import formatDateString from "app/theme-layouts/layout3/utils/formatDateToDateAndTime";
+import { CloseOutlined } from "@ant-design/icons";
+import { RECORD_MANUAL_TXN } from "../../../../gql/mutations";
+
+const { Option } = Select;
 
 const handleChange = (value) => {
   console.log(`selected ${value}`);
@@ -34,6 +41,46 @@ const handleChange = (value) => {
 const onChange = (date, dateString) => {
   console.log(date, dateString);
 };
+
+// Sample data for dropdowns (replace with your actual data)
+const paymentModes = [
+  { value: "cash", label: "Cash" },
+  { value: "cheque", label: "Cheque" },
+  { value: "bank_transfer", label: "Bank Transfer" },
+  { value: "mobile_money", label: "Mobile Money" },
+  { value: "credit_card", label: "Credit Card" },
+];
+
+const currencies = [
+  { value: "UGX", label: "UGX (Ugandan Shilling)" },
+  { value: "USD", label: "USD (US Dollar)" },
+  { value: "KES", label: "KES (Kenyan Shilling)" },
+];
+
+const banks = [
+  { value: "stanbic", label: "Stanbic Bank" },
+  { value: "centenary", label: "Centenary Bank" },
+  { value: "dfcu", label: "DFCU Bank" },
+  { value: "absa", label: "Absa Bank" },
+];
+
+const branches = [
+  { value: "kampala_road", label: "Kampala Road Branch" },
+  { value: "garden_city", label: "Garden City Branch" },
+  { value: "entebbe", label: "Entebbe Branch" },
+];
+
+const studyYears = [1, 2, 3, 4, 5];
+const semesters = [
+  "Semester 1",
+  "Semester 2",
+  "Trimester 1",
+  "Trimester 2",
+  "Trimester 3",
+  "Annual",
+];
+const academicYears = ["2022/2023", "2023/2024", "2024/2025"];
+
 const columns = [
   {
     title: "Row Name",
@@ -54,42 +101,16 @@ const columns = [
 
 function Transactions() {
   const [amount, setAmount] = useState("");
-
+  const [form] = Form.useForm();
   const formatAmount = (value) => {
     const cleanedValue = value.replace(/[^\d]/g, ""); // Remove all non-numeric characters
     const formattedValue = cleanedValue.replace(/\B(?=(\d{3})+(?!\d))/g, ","); // Add commas
     return `UGX ${formattedValue}`;
   };
 
-  const handleAmountChange = (e) => {
-    const { value } = e.target;
-    const formattedValue = formatAmount(value);
-    setAmount(formattedValue);
-  };
-
   const [open, setOpen] = useState(false);
   const [open1, setOpen1] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
-  // const [modalText, setModalText] = useState("Content of the modal");
-  const showModal = () => {
-    setOpen(true);
-  };
-  const showModal1 = () => {
-    setOpen1(true);
-  };
-  const handleOk = () => {
-    // setModalText("The modal will be closed after two seconds");
-    setConfirmLoading(true);
-    setTimeout(() => {
-      setOpen(false), setOpen1(false);
-      setConfirmLoading(false);
-    }, 2000);
-  };
-  const handleCancel = () => {
-    console.log("Clicked cancel button");
-    setOpen(false), setOpen1(false);
-  };
-
   const dispatch = useDispatch();
   const studentFile = useSelector(selectStudentData);
   const [transactions, setTransations] = useState([]);
@@ -97,6 +118,73 @@ function Transactions() {
     useLazyQuery(LOAD_STUDENT_TRANSACTIONS, {
       notifyOnNetworkStatusChange: true,
     });
+
+  const [recordManualTxn, { loading: recordingManualTxn, error: recordErr }] =
+    useMutation(RECORD_MANUAL_TXN, {
+      refetchQueries: ["loadStudentFileWithVoid"],
+      notifyOnNetworkStatusChange: true,
+    });
+  // const [modalText, setModalText] = useState("Content of the modal");
+
+  const handleAmountChange = (e) => {
+    const { value } = e.target;
+    const formattedValue = formatAmount(value);
+    setAmount(formattedValue);
+  };
+
+  const showModal = () => {
+    setOpen(true);
+  };
+
+  const showModal1 = () => {
+    setOpen1(true);
+  };
+
+  const handleOk = async () => {
+    // setModalText("The modal will be closed after two seconds");
+    try {
+      // setConfirmLoading(true);
+      await form.validateFields();
+
+      const values = await form.getFieldsValue();
+
+      console.log("values", values);
+      const payload = {
+        payload: {
+          stdno: studentFile?.student_no,
+          ...values,
+        },
+      };
+
+      const res = await recordManualTxn({
+        variables: payload,
+      });
+
+      form.resetFields();
+      setOpen(false);
+      setOpen1(false);
+      dispatch(
+        showMessage({
+          message: "Transaction Submitted Successfully",
+          variant: "success",
+        })
+      );
+      // setTimeout(() => {
+      //   setOpen(false), setOpen1(false);
+      //   setConfirmLoading(false);
+      // }, 2000);
+      // setConfirmLoading(false);
+    } catch (error) {
+      console.error(error.message);
+    }
+  };
+
+  const handleCancel = () => {
+    console.log("Clicked cancel button");
+    setOpen(false);
+    setOpen1(false);
+  };
+
   const expandedRowRender = (row, record) => {
     // console.log("details", row, record);
 
@@ -111,7 +199,7 @@ function Transactions() {
       {
         title: "Reference Token",
         dataIndex: "prt",
-        width: "15%",
+        // width: "15%",
         key: "prt",
         ellipsis: true,
         render: (text, record) => <div>{text}</div>,
@@ -147,7 +235,7 @@ function Transactions() {
         dataIndex: "payment_date",
         width: "20%",
         ellipsis: true,
-        render: (text, record, index) => formatDateString(parseInt(text)),
+        render: (text, record, index) => formatDateString(text),
         // render: (text, record, index) => record.category.category_name,
       },
       {
@@ -258,11 +346,28 @@ function Transactions() {
         })
       );
     }
-  }, [error]);
+
+    if (recordErr) {
+      dispatch(
+        showMessage({
+          message: recordErr.message,
+          variant: "error",
+        })
+      );
+    }
+  }, [error, recordErr]);
 
   useEffect(() => {
     if (studentFile) {
       loadTransactions(studentFile?.student_no);
+      form.setFieldsValue({
+        studyYear:
+          studentFile?.current_info?.recent_enrollment?.study_yr || "1",
+        semester: studentFile?.current_info?.recent_enrollment?.sem || "1",
+        academicYear:
+          studentFile?.current_info?.recent_enrollment?.acc_yr_title ||
+          studentFile?.current_info?.current_acc_yr,
+      });
     }
   }, [studentFile]);
 
@@ -356,175 +461,199 @@ function Transactions() {
           </Button>
         </Space>
         <Modal
-          width={600}
-          title="Commit a Prepayment Transaction"
+          width={680}
+          title={
+            <Typography.Text strong style={{ color: "#fff" }}>
+              Add Prepayment Transaction
+            </Typography.Text>
+          }
           open={open}
           onOk={handleOk}
           confirmLoading={confirmLoading}
           onCancel={handleCancel}
+          closeIcon={<CloseOutlined style={{ color: "#fff" }} />}
+          maskClosable={false}
+          footer={[
+            <Button key="back" onClick={handleCancel}>
+              Cancel
+            </Button>,
+            <Button
+              key="submit"
+              type="primary"
+              loading={recordingManualTxn}
+              onClick={handleOk}
+            >
+              Submit Transaction
+            </Button>,
+          ]}
+          styles={{
+            body: {
+              paddingLeft: 10,
+              paddingRight: 10,
+              height: "auto",
+
+              // Ensure the content is not clipped
+            },
+            content: {
+              padding: 0,
+              height: "auto",
+              backgroundColor: "#f4f6f9",
+              // Ensure the content is not clipped
+            },
+            footer: {
+              padding: 10,
+            },
+            header: {
+              backgroundColor: "#2f405d",
+              padding: "7px 10px",
+            },
+          }}
         >
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <div style={{ marginRight: "10px" }}>
-              Study Year&nbsp;<Tag color="processing">1</Tag>
+          <Form form={form} layout="vertical" size="middle">
+            {/* Context Section */}
+            <div style={{ marginBottom: 8, marginTop: 16 }}>
+              <Flex gap="middle" align="center" style={{ width: "100%" }}>
+                <Form.Item
+                  label="Study Year"
+                  name="studyYear"
+                  style={{ flex: "none", width: "32%" }} // Prevent growing, fixed width
+                  layout="horizontal"
+                >
+                  <Input style={{ width: "100%" }} />
+                </Form.Item>
+
+                <Form.Item
+                  label="Semester"
+                  name="semester"
+                  style={{ flex: "none", width: "32%" }} // Prevent growing, fixed width
+                  layout="horizontal"
+                >
+                  <Input style={{ width: "100%" }} />
+                </Form.Item>
+
+                <Form.Item
+                  label="Academic Year"
+                  name="academicYear"
+                  style={{ flex: "none", width: "32%" }} // Prevent growing, fixed width
+                  layout="horizontal"
+                >
+                  <Input style={{ width: "100%" }} />
+                </Form.Item>
+              </Flex>
             </div>
-            <div style={{ marginRight: "10px" }}>
-              Semester&nbsp;<Tag color="processing">2</Tag>
+
+            <Divider style={{ margin: "12px 0", borderColor: "#d9d9d9" }} />
+
+            {/* Payment Details Section */}
+            <div style={{ marginBottom: 16 }}>
+              <Flex gap="middle" align="flex-start" style={{ width: "100%" }}>
+                <Form.Item
+                  label="Payment Mode"
+                  name="paymentMode"
+                  rules={[
+                    { required: true, message: "Please select payment mode" },
+                  ]}
+                  style={{ width: "100%" }}
+                >
+                  <Select
+                    placeholder="Select payment mode"
+                    style={{ width: "100%" }}
+                  >
+                    {paymentModes.map((mode) => (
+                      <Option key={mode.value} value={mode.value}>
+                        {mode.label}
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+
+                <Form.Item
+                  label="Mode Reference"
+                  name="referenceNumber"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter reference number",
+                    },
+                  ]}
+                  style={{ width: "100%" }}
+                >
+                  <Input
+                    placeholder="e.g. CHQ12345"
+                    style={{ width: "100%" }}
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  label="Currency"
+                  name="currency"
+                  initialValue="UGX"
+                  style={{ width: "50%" }}
+                >
+                  <Select style={{ width: "100%" }}>
+                    {currencies.map((currency) => (
+                      <Option key={currency.value} value={currency.value}>
+                        {currency.label}
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+
+                <Form.Item
+                  label="Amount"
+                  name="amount"
+                  rules={[
+                    { required: true, message: "Please enter amount" },
+                    {
+                      type: "number",
+                      min: 0,
+                      message: "Amount must be positive",
+                    },
+                  ]}
+                  style={{ width: "100%" }}
+                >
+                  <InputNumber
+                    style={{ width: "100%" }}
+                    min={0}
+                    // step={1000}
+                    // formatter={(value) =>
+                    //   `UGX ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                    // }
+                  />
+                </Form.Item>
+              </Flex>
             </div>
+
+            <Divider style={{ margin: "12px 0", borderColor: "#d9d9d9" }} />
+
+            {/* Bank Details Section */}
             <div>
-              Academic Year&nbsp;<Tag color="processing">2023/2024</Tag>
+              <Flex gap="middle" align="flex-start" style={{ width: "100%" }}>
+                <Form.Item label="Bank" name="bank" style={{ flex: 1 }}>
+                  <Select placeholder="Select bank" style={{ width: "100%" }}>
+                    {banks.map((bank) => (
+                      <Option key={bank.value} value={bank.value}>
+                        {bank.label}
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+
+                <Form.Item label="Branch" name="branch" style={{ flex: 1 }}>
+                  <Input style={{ width: "100%" }} />
+                </Form.Item>
+
+                <Form.Item
+                  label="Date"
+                  name="date"
+                  rules={[{ required: true, message: "Please select date" }]}
+                  style={{ flex: 1 }}
+                >
+                  <DatePicker style={{ width: "100%" }} />
+                </Form.Item>
+              </Flex>
             </div>
-          </div>
-          <Divider
-            style={{
-              marginTop: 10,
-              borderColor: "#0832b7",
-              borderStyle: "dashed",
-              borderWidth: 1,
-            }}
-          />
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <div style={{ marginRight: "10px" }}>
-              <div style={{ marginBottom: 5 }}>Payment Mode</div>
-              <Select
-                size="small"
-                defaultValue="Select Payment Mode"
-                style={{
-                  width: 200,
-                }}
-                onChange={handleChange}
-                options={[
-                  {
-                    value: "jack",
-                    label: "Jack",
-                  },
-                  {
-                    value: "lucy",
-                    label: "Lucy",
-                  },
-                ]}
-              />
-            </div>
-            <div style={{ marginRight: "10px" }}>
-              <div style={{ marginBottom: 5 }}>Mode Reference</div>
-              <Select
-                size="small"
-                defaultValue="Select Mode Reference"
-                style={{
-                  width: 120,
-                }}
-                onChange={handleChange}
-                options={[
-                  {
-                    value: "jack",
-                    label: "Jack",
-                  },
-                  {
-                    value: "lucy",
-                    label: "Lucy",
-                  },
-                ]}
-              />
-            </div>
-            <div style={{ marginRight: "10px" }}>
-              <div style={{ marginBottom: 5 }}>Currency</div>
-              <Select
-                size="small"
-                defaultValue="Currency"
-                style={
-                  {
-                    // width: 120,
-                  }
-                }
-                onChange={handleChange}
-                options={[
-                  {
-                    value: "jack",
-                    label: "Jack",
-                  },
-                  {
-                    value: "lucy",
-                    label: "Lucy",
-                  },
-                ]}
-              />
-            </div>
-            <div style={{ marginRight: "10px" }}>
-              <div style={{ marginBottom: 5 }}>Amount</div>
-              <Select
-                size="small"
-                defaultValue="Amount"
-                style={{
-                  width: 105,
-                }}
-                onChange={handleChange}
-                options={[
-                  {
-                    value: "jack",
-                    label: "Jack",
-                  },
-                  {
-                    value: "lucy",
-                    label: "Lucy",
-                  },
-                ]}
-              />
-            </div>
-          </div>
-          <Divider style={{ marginBottom: 5 }} />
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <div style={{ flexGrow: 1, marginRight: "10px" }}>
-              <div style={{ marginBottom: 5 }}>Bank</div>
-              <Select
-                size="small"
-                defaultValue="Select Bank"
-                style={{
-                  width: "100%", // Make the Select component fill the available width
-                }}
-                onChange={handleChange}
-                options={[
-                  {
-                    value: "jack",
-                    label: "Jack",
-                  },
-                  {
-                    value: "lucy",
-                    label: "Lucy",
-                  },
-                ]}
-              />
-            </div>
-            <div style={{ flexGrow: 1, marginRight: "10px" }}>
-              <div style={{ marginBottom: 5 }}>Branch</div>
-              <Select
-                size="small"
-                defaultValue="Select Branch"
-                style={{
-                  width: "100%", // Make the Select component fill the available width
-                }}
-                onChange={handleChange}
-                options={[
-                  {
-                    value: "jack",
-                    label: "Jack",
-                  },
-                  {
-                    value: "lucy",
-                    label: "Lucy",
-                  },
-                ]}
-              />
-            </div>
-            <div style={{ flexGrow: 1 }}>
-              <div style={{ marginBottom: 5 }}>Date</div>
-              <DatePicker
-                size="small"
-                onChange={onChange}
-                style={{
-                  width: "100%", // Make the Select component fill the available width
-                }}
-              />
-            </div>
-          </div>
+          </Form>
         </Modal>
 
         <Modal

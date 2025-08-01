@@ -117,11 +117,38 @@ const VOID_INVOICE = gql`
   }
 `;
 
+const RECORD_MANUAL_TXN = gql`
+  mutation RecordManualTxn($payload: TxnInput) {
+    recordManualTxn(payload: $payload) {
+      id
+      name
+      student_no
+      study_yr
+      semester
+      prt
+      payment_date
+      bank_txn_id
+      tredumo_txn_id
+      bank_ref
+      bank_name
+      bank_branch
+      amount
+      acc_yr
+      unallocated
+      allocated
+      posted_by
+      is_dp
+      is_pp
+    }
+  }
+`;
+
 export {
   ENROLL_STUDENT,
   SAVE_PAST_ENROLLMENT,
   DELETE_ENROLLMENT,
   EDIT_ENROLLMENT,
   GENERATE_PRT,
-  VOID_INVOICE
+  VOID_INVOICE,
+  RECORD_MANUAL_TXN,
 };

@@ -91,7 +91,7 @@ const GenerateTable = () => {
   const unpaidInvoices = studentFile?.invoices.filter(
     (inv) => inv.amount_due > 0
   );
-  const totalAmountDue = unpaidInvoices.reduce(
+  const totalAmountDue = unpaidInvoices?.reduce(
     (total, item) => total + parseInt(item.amount_due),
     0
   );
